@@ -1,0 +1,120 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.background-img {
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  display: block;
+}
+.button-box {
+  position: absolute;
+  top: 83%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  width: 200px;
+  cursor: pointer;
+  transition: transform 0.3s ease; /* 0.3秒平滑放大動畫 */
+}
+
+/* 滑鼠靠近時：保持置中並放大 1.1 倍 */
+.button-box:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* 原本的按鈕圖 */
+.btn-normal {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* 變色後的按鈕圖：精準疊在原本按鈕的正上方，預設隱藏 */
+.btn-hover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  display: block;
+  opacity: 0; /* 預設完全透明 */
+  transition: opacity 0.3s ease; /* 0.3秒平滑換圖動畫 */
+}
+
+/* 滑鼠靠近外框時，讓變色按鈕圖顯示出來 */
+.button-box:hover .btn-hover {
+  opacity: 1;
+}
+
+/* 1. 雲朵左右緩慢飄動劇本（保留置中校正，左右各飄 18px） */
+@keyframes cloud-drift {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) translateX(-18px);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateX(18px);
+  }
+}
+
+/* 2. 雲朵共用基礎設定 */
+.anim-cloud {
+  position: absolute;
+  height: auto;
+  z-index: 5; /* 建議設比星星與按鈕小（例如 5），讓雲朵在背景層飄動，不蓋住按鈕 */
+  pointer-events: none;
+  transform: translate(-50%, -50%) translateX(-18px);
+
+  /* 6 秒完成一次左右來回、平滑加減速、無限循環 */
+  animation: cloud-drift 6s ease-in-out infinite both;
+}
+
+/* 3. 負數時間差（網頁一打開就錯開飄動，不呆等） */
+.cloud-delay-1 {
+  animation-delay: -1.5s;
+}
+.cloud-delay-2 {
+  animation-delay: -3s;
+}
+.cloud-delay-3 {
+  animation-delay: -4.5s;
+}
+
+/* 4. 個別設定六朵雲的「位置」與「大小」 */
+.cloud-1 {
+  top: 25%;
+  left: 15%;
+  width: 250px;
+}
+
+.cloud-2 {
+  top: 12%;
+  left: 35%;
+  width: 250px;
+}
+
+.cloud-3 {
+  top: 40%;
+  left: 12%;
+  width: 190px;
+}
+
+.cloud-4 {
+  top: 27%;
+  left: 88%;
+  width: 300px;
+}
+
+.cloud-5 {
+  top: 22%;
+  left: 62%;
+  width: 200px;
+}
+
+.cloud-6 {
+  top: 48%;
+  left: 88%;
+  width: 130px;
+}

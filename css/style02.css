@@ -1,0 +1,376 @@
+/* 頁面基礎設定：讓輪播區塊永遠在螢幕正中央 */
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  font-family: monospace;
+}
+
+/* 滿版背景圖：往外微幅延伸 2px，徹底消除頂部與邊緣小白邊 */
+.background-img {
+  position: fixed;
+  top: -2px;
+  left: -2px;
+  width: calc(100vw + 4px);
+  height: calc(100vh + 4px);
+  object-fit: cover;
+  object-position: center top; /* 確保天空頂部緊貼視窗上緣 */
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* === 下方 NEXT 按鈕外層連結（負責定位與置中，不會再跑位） === */
+.next-page-link {
+  position: absolute;
+  top: 90%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  width: 200px;
+  z-index: 25;
+  display: block;
+  transition: all 0.3s ease;
+}
+
+.next-page-link:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* 未確認角色前，鎖定下方的 NEXT 按鈕 */
+.next-page-link.disabled {
+  pointer-events: none;
+  opacity: 0.45;
+  filter: grayscale(80%);
+}
+
+/* NEXT 按鈕內層圖片容器 */
+.button-box {
+  position: relative;
+  width: 100%;
+  cursor: pointer;
+}
+
+.btn-normal {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.btn-hover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.next-page-link:hover .btn-hover {
+  opacity: 1;
+}
+
+/* 保持所有像素畫清晰不模糊 */
+img {
+  image-rendering: pixelated;
+}
+
+/* 輪播主容器 */
+.carousel-container {
+  position: relative;
+  width: 1100px;
+  height: 650px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: -60px;
+}
+
+/* 左右箭頭按鈕 */
+.arrow-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 45px;
+  height: 65px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  z-index: 20;
+  transition: transform 0.1s;
+}
+
+.arrow-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.arrow-btn:active {
+  transform: translateY(-46%);
+}
+
+.arrow-left {
+  left: 250px;
+}
+
+.arrow-right {
+  right: 250px;
+}
+
+/* 卡片外框容器：改為 400x540 並固定 GPU 圖層，消除網格白線跳動 */
+.card {
+  position: absolute;
+  width: 400px;
+  height: 540px;
+  transition:
+    transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1),
+    filter 0.5s ease;
+}
+
+/* 1. 卡片單張大圖（底圖） */
+.card-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+  transform: translateZ(0);
+}
+
+/* 2. 輸入框外層容器 */
+.input-wrapper {
+  position: absolute;
+  top: 57.5%;
+  left: 14%;
+  width: 65%;
+  height: 8%;
+}
+
+.input-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+  pointer-events: none;
+}
+
+.nickname-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0 12px;
+  box-sizing: border-box;
+  font-size: 18px;
+  font-weight: bold;
+  color: #222;
+  font-family: monospace;
+}
+
+/* 3. 紅色確認鍵按鈕 */
+.confirm-btn {
+  position: absolute;
+  top: 57.5%;
+  left: 66%;
+  width: 21%;
+  height: 8%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.confirm-btn .ok-normal {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.confirm-btn .ok-hover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.confirm-btn:hover .ok-hover {
+  opacity: 1;
+}
+
+.confirm-btn:hover {
+  transform: scale(1.06);
+}
+
+.confirm-btn:active {
+  transform: scale(1.06) translateY(3px);
+}
+
+/* --- 三種輪播位置狀態（中間改為 1.25 倍，讓 400*1.25=500px 整數不抖動） --- */
+.card.pos-center {
+  transform: translate3d(0, 0, 0) scale(1.25);
+  filter: brightness(1);
+  z-index: 10;
+}
+
+.card.pos-left {
+  transform: translate3d(-460px, 0, 0) scale(0.625);
+  filter: brightness(0.45);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.card.pos-right {
+  transform: translate3d(460px, 0, 0) scale(0.625);
+  filter: brightness(0.45);
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* === 左右未選中卡片鎖定輸入 === */
+.card.pos-left .input-wrapper,
+.card.pos-left .confirm-btn,
+.card.pos-right .input-wrapper,
+.card.pos-right .confirm-btn {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* === 確認角色後的「超明顯圖形發光」特效（修正必亮版） === */
+.card.is-confirmed {
+  transform: translate3d(0, -6px, 0) scale(1.29) !important;
+  z-index: 15;
+}
+
+.card.is-confirmed .card-bg {
+  animation: selectedPulse 1.4s infinite alternate ease-in-out !important;
+}
+
+@keyframes selectedPulse {
+  0% {
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.55))
+      drop-shadow(0 0 16px rgba(255, 190, 0, 0.35)) brightness(1.01);
+  }
+  100% {
+    filter: drop-shadow(0 0 12px rgba(255, 225, 60, 0.85))
+      drop-shadow(0 0 24px rgba(255, 200, 0, 0.55)) brightness(1.04);
+  }
+}
+
+/* === 角色頭像框定位與精準滑鼠換圖 === */
+.avatar-wrapper {
+  position: absolute;
+  top: 20%;
+  left: 18%;
+  width: 65%;
+  height: 33%;
+  cursor: default;
+  z-index: 11;
+}
+
+.avatar-normal,
+.avatar-hover {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
+
+.avatar-hover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.avatar-wrapper.is-hovered {
+  cursor: pointer;
+}
+
+.avatar-wrapper.is-hovered .avatar-hover {
+  opacity: 1;
+}
+
+/* === 滑鼠移過去放大共通設定 === */
+.hover-zoom {
+  position: absolute;
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.25, 0.8, 0.25, 1);
+  z-index: 12;
+}
+
+.stat-item:hover {
+  transform: scale(1.05);
+  z-index: 15;
+}
+
+.mini-btn:hover {
+  transform: scale(1.15);
+  z-index: 15;
+}
+
+/* === 三個數值條的位置與大小 === */
+.stat-item {
+  left: 20%;
+  width: 47%;
+  height: 5.2%;
+  object-fit: contain;
+}
+
+.stat-pwr {
+  top: 69.7%;
+  left: 15%;
+}
+.stat-skl {
+  top: 76.1%;
+  left: 15%;
+}
+.stat-vcd {
+  top: 82.5%;
+  left: 15%;
+}
+
+/* === 右下四個小按鈕的位置與大小 === */
+.mini-btn {
+  width: 9.5%;
+  height: 7%;
+  object-fit: contain;
+}
+
+.btn-red {
+  top: 69.7%;
+  left: 64%;
+}
+
+.btn-cross {
+  top: 69.7%;
+  left: 75.5%;
+}
+
+.btn-blue {
+  top: 78%;
+  left: 64%;
+}
+
+.btn-green {
+  top: 78%;
+  left: 75.5%;
+}

@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="../css/style02.css" />
+  </head>
+  <body>
+    <img src="../img/背景/03背景.png" class="background-img" />
+
+    <a href="../01,02/02-2.html" class="next-page-link">
+      <div class="button-box">
+        <img class="btn-normal" src="../img/按鈕/按鈕深next.png" alt="按鈕" />
+        <img
+          class="btn-hover"
+          src="../img/按鈕/按鈕淺next.png"
+          alt="按鈕變色"
+        />
+      </div>
+    </a>
+    <div class="carousel-container">
+      <!-- 左右箭頭按鈕 -->
+      <button class="arrow-btn arrow-left" onclick="moveSlide(1)">
+        <img src="../img/角色/左劍頭.png" alt="向左切換" />
+      </button>
+      <button class="arrow-btn arrow-right" onclick="moveSlide(-1)">
+        <img src="../img/角色/右劍頭.png" alt="向右切換" />
+      </button>
+
+      <!-- ================= 角色卡片 1（預設左邊） ================= -->
+      <div class="card pos-left" data-char="角色 1">
+        <img src="../img/角色/背板.png" class="card-bg" alt="角色1大圖" />
+
+        <!-- 【新增】角色 2 頭像區（滑鼠靠近會換圖） -->
+        <div class="avatar-wrapper">
+          <img
+            src="../img/角色/人物/力達.png"
+            class="avatar-normal"
+            alt="阿郎一般"
+          />
+          <img
+            src="../img/角色/人物/力達2.png"
+            class="avatar-hover"
+            alt="阿郎換圖"
+          />
+        </div>
+        <div class="input-wrapper">
+          <img src="../img/角色/輸入框.png" class="input-bg" alt="輸入框底圖" />
+          <input
+            type="text"
+            class="nickname-input"
+            placeholder="Hung, Li-Da"
+            maxlength="12"
+          />
+        </div>
+
+        <!-- 確認鍵按鈕（滑鼠移過去會切換成淺色圖） -->
+        <button class="confirm-btn" onclick="confirmName(this)">
+          <img src="../img/角色/ok按鈕.png" class="ok-normal" alt="確認名字" />
+          <img
+            src="../img/角色/ok按鈕淺.png"
+            class="ok-hover"
+            alt="確認名字淺色"
+          />
+        </button>
+
+        <!-- 角色 1 的三個數值圖片（若各有專屬數值圖可替換檔名） -->
+        <img
+          src="../img/角色/數值/綠一.png"
+          class="stat-item stat-pwr hover-zoom"
+          alt="PWR數值"
+        />
+        <img
+          src="../img/角色/數值/橘二.png"
+          class="stat-item stat-skl hover-zoom"
+          alt="SKL數值"
+        />
+        <img
+          src="../img/角色/數值/藍三.png"
+          class="stat-item stat-vcd hover-zoom"
+          alt="VCD數值"
+        />
+
+        <!-- 角色 1 的四個小按鈕圖片 -->
+        <img
+          src="../img/角色/小按鈕四/左上紅.png"
+          class="mini-btn btn-red hover-zoom"
+          alt="紅色按鈕"
+        />
+        <img
+          src="../img/角色/小按鈕四/左下藍.png"
+          class="mini-btn btn-blue hover-zoom"
+          alt="藍色按鈕"
+        />
+        <img
+          src="../img/角色/小按鈕四/右上灰.png"
+          class="mini-btn btn-cross hover-zoom"
+          alt="十字按鈕"
+        />
+        <img
+          src="../img/角色/小按鈕四/右下綠.png"
+          class="mini-btn btn-green hover-zoom"
+          alt="綠色按鈕"
+        />
+      </div>
+
+      <!-- 角色卡片 2 -->
+      <div class="card pos-center" data-char="角色 2">
+        <!-- 1. 底圖 -->
+        <img src="../img/角色/背板.png" class="card-bg" alt="角色2大圖" />
+
+        <!-- 2. 頭像雙圖（注意：</div> 必須在這裡就結束！） -->
+        <div class="avatar-wrapper">
+          <img
+            src="../img/角色/人物/阿郎.png"
+            class="avatar-normal"
+            alt="阿郎一般"
+          />
+          <img
+            src="../img/角色/人物/阿郎2.png"
+            class="avatar-hover"
+            alt="阿郎換圖"
+          />
+        </div>
+
+        <!-- 3. 輸入框（注意：</div> 必須在這裡就結束！） -->
+        <div class="input-wrapper">
+          <img src="../img/角色/輸入框.png" class="input-bg" alt="輸入框底圖" />
+          <input
+            type="text"
+            class="nickname-input"
+            placeholder="Lee Weilang"
+            maxlength="12"
+          />
+        </div>
+
+        <!-- 確認鍵按鈕（滑鼠移過去會切換成淺色圖） -->
+        <button class="confirm-btn" onclick="confirmName(this)">
+          <img src="../img/角色/ok按鈕.png" class="ok-normal" alt="確認名字" />
+          <img
+            src="../img/角色/ok按鈕淺.png"
+            class="ok-hover"
+            alt="確認名字淺色"
+          />
+        </button>
+        <!-- 5. 三個數值與四個小按鈕（直接放在 .card 底下，不要被任何 div 包住） -->
+        <img
+          src="../img/角色/數值/綠一.png"
+          class="stat-item stat-pwr hover-zoom"
+          alt="PWR數值"
+        />
+        <img
+          src="../img/角色/數值/橘二.png"
+          class="stat-item stat-skl hover-zoom"
+          alt="SKL數值"
+        />
+        <img
+          src="../img/角色/數值/藍三.png"
+          class="stat-item stat-vcd hover-zoom"
+          alt="VCD數值"
+        />
+
+        <img
+          src="../img/角色/小按鈕四/左上紅.png"
+          class="mini-btn btn-red hover-zoom"
+          alt="紅色按鈕"
+        />
+        <img
+          src="../img/角色/小按鈕四/左下藍.png"
+          class="mini-btn btn-blue hover-zoom"
+          alt="藍色按鈕"
+        />
+        <img
+          src="../img/角色/小按鈕四/右上灰.png"
+          class="mini-btn btn-cross hover-zoom"
+          alt="十字按鈕"
+        />
+        <img
+          src="../img/角色/小按鈕四/右下綠.png"
+          class="mini-btn btn-green hover-zoom"
+          alt="綠色按鈕"
+        />
+      </div>
+
+      <!-- ================= 角色卡片 3（預設右邊） ================= -->
+      <div class="card pos-right" data-char="角色 3">
+        <img src="../img/角色/背板.png" class="card-bg" alt="角色3大圖" />
+
+        <!-- 【新增】角色 3 頭像區（滑鼠靠近會換圖） -->
+        <div class="avatar-wrapper">
+          <img
+            src="../img/角色/人物/光大.png"
+            class="avatar-normal"
+            alt="光大一般"
+          />
+          <img
+            src="../img/角色/人物/光大2.png"
+            class="avatar-hover"
+            alt="光大換圖"
+          />
+        </div>
+        <div class="input-wrapper">
+          <img src="../img/角色/輸入框.png" class="input-bg" alt="輸入框底圖" />
+          <input
+            type="text"
+            class="nickname-input"
+            placeholder="Guang-Dah Chen"
+            maxlength="12"
+          />
+        </div>
+
+        <!-- 確認鍵按鈕（滑鼠移過去會切換成淺色圖） -->
+        <button class="confirm-btn" onclick="confirmName(this)">
+          <img src="../img/角色/ok按鈕.png" class="ok-normal" alt="確認名字" />
+          <img
+            src="../img/角色/ok按鈕淺.png"
+            class="ok-hover"
+            alt="確認名字淺色"
+          />
+        </button>
+
+        <!-- 角色 3 的三個數值圖片 -->
+        <img
+          src="../img/角色/數值/綠一.png"
+          class="stat-item stat-pwr hover-zoom"
+          alt="PWR數值"
+        />
+        <img
+          src="../img/角色/數值/橘二.png"
+          class="stat-item stat-skl hover-zoom"
+          alt="SKL數值"
+        />
+        <img
+          src="../img/角色/數值/藍三.png"
+          class="stat-item stat-vcd hover-zoom"
+          alt="VCD數值"
+        />
+
+        <!-- 角色 3 的四個小按鈕圖片 -->
+        <img
+          src="../img/角色/小按鈕四/左上紅.png"
+          class="mini-btn btn-red hover-zoom"
+          alt="紅色按鈕"
+        />
+        <img
+          src="../img/角色/小按鈕四/左下藍.png"
+          class="mini-btn btn-blue hover-zoom"
+          alt="藍色按鈕"
+        />
+        <img
+          src="../img/角色/小按鈕四/右上灰.png"
+          class="mini-btn btn-cross hover-zoom"
+          alt="十字按鈕"
+        />
+        <img
+          src="../img/角色/小按鈕四/右下綠.png"
+          class="mini-btn btn-green hover-zoom"
+          alt="綠色按鈕"
+        />
+      </div>
+    </div>
+
+    <script>
+      const cards = document.querySelectorAll(".card");
+      const nextBtn = document.querySelector(".next-page-link");
+      const arrowBtns = document.querySelectorAll(".arrow-btn");
+
+      let positions = ["pos-left", "pos-center", "pos-right"];
+      let isConfirmed = false; // 紀錄玩家是否已經按下 OK 確認
+
+      // 頁面剛載入時：鎖定 NEXT 按鈕，並只開放中間卡片輸入
+      nextBtn.classList.add("disabled");
+      updateCardStates();
+
+      // 左右滑動切換角色
+      function moveSlide(direction) {
+        // 如果已經按 OK 鎖定角色了，就不允許再滑動
+        if (isConfirmed) {
+          alert("您已鎖定角色！若要重新選擇，請先點擊「取消鎖定」。");
+          return;
+        }
+
+        if (direction === 1) {
+          positions.push(positions.shift());
+        } else {
+          positions.unshift(positions.pop());
+        }
+
+        cards.forEach((card, index) => {
+          card.classList.remove("pos-left", "pos-center", "pos-right");
+          card.classList.add(positions[index]);
+        });
+
+        updateCardStates();
+      }
+
+      // 控制只有中間那張卡片可以輸入暱稱
+      function updateCardStates() {
+        cards.forEach((card) => {
+          const input = card.querySelector(".nickname-input");
+          const btn = card.querySelector(".confirm-btn");
+
+          if (card.classList.contains("pos-center")) {
+            input.disabled = false;
+            btn.disabled = false;
+          } else {
+            input.disabled = true;
+            btn.disabled = true;
+            input.value = "";
+          }
+        });
+      }
+
+      // 點擊 OK 按鈕：確認／取消鎖定角色
+      function confirmName(btn) {
+        const card = btn.closest(".card");
+        if (!card.classList.contains("pos-center")) return;
+
+        const charName = card.getAttribute("data-char");
+        const input = card.querySelector(".nickname-input");
+        const nickname = input.value.trim();
+
+        // 情況 A：如果目前已經鎖定，再按一次則「解除鎖定」讓玩家重選
+        if (isConfirmed) {
+          isConfirmed = false;
+          input.disabled = false;
+          card.classList.remove("is-confirmed");
+          nextBtn.classList.add("disabled"); // 重新鎖定 NEXT 按鈕
+          arrowBtns.forEach((arrow) => (arrow.style.opacity = "1"));
+          alert("已解除角色鎖定，您可以重新修改暱稱或切換其他角色！");
+          return;
+        }
+
+        // 情況 B：尚未鎖定，檢查是否有輸入暱稱
+        if (!nickname) {
+          alert("請先輸入您的暱稱！");
+          input.focus();
+          return;
+        }
+
+        // 鎖定狀態啟動！
+        isConfirmed = true;
+        input.disabled = true; // 鎖住輸入框不讓修改
+        card.classList.add("is-confirmed"); // 卡片外框發金光
+        nextBtn.classList.remove("disabled"); // 解鎖下方的 NEXT 按鈕！
+        arrowBtns.forEach((arrow) => (arrow.style.opacity = "0.35")); // 左右箭頭變暗提示不可切換
+
+        // 存入瀏覽器，讓下一頁 02-2.html 可以讀取
+        localStorage.setItem("selectedCharacter", charName);
+        localStorage.setItem("playerNickname", nickname);
+
+        alert(
+          `角色確認成功！\n選擇角色：${charName}\n玩家暱稱：${nickname}\n\n現在可以點擊下方的 NEXT 前往下一頁了！`,
+        );
+      }
+      // === 精準偵測：滑鼠碰到角色不透明區域才換圖 ===
+      document.querySelectorAll(".avatar-wrapper").forEach((wrapper) => {
+        const normalImg = wrapper.querySelector(".avatar-normal");
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        let isImgReady = false;
+
+        // 圖片載入後，將圖片畫進隱藏的 canvas 以讀取像素透明度
+        function initCanvas() {
+          if (normalImg.naturalWidth === 0) return;
+          canvas.width = normalImg.naturalWidth;
+          canvas.height = normalImg.naturalHeight;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(normalImg, 0, 0);
+          isImgReady = true;
+        }
+
+        if (normalImg.complete) {
+          initCanvas();
+        } else {
+          normalImg.addEventListener("load", initCanvas);
+        }
+
+        wrapper.addEventListener("mousemove", (e) => {
+          if (!isImgReady) return;
+
+          const rect = wrapper.getBoundingClientRect();
+          // 計算圖片在 object-fit: contain 下的實際顯示比例與偏移量
+          const imgRatio = canvas.width / canvas.height;
+          const boxRatio = rect.width / rect.height;
+          let renderW, renderH, offsetX, offsetY;
+
+          if (imgRatio > boxRatio) {
+            renderW = rect.width;
+            renderH = rect.width / imgRatio;
+            offsetX = 0;
+            offsetY = (rect.height - renderH) / 2;
+          } else {
+            renderH = rect.height;
+            renderW = rect.height * imgRatio;
+            offsetX = (rect.width - renderW) / 2;
+            offsetY = 0;
+          }
+
+          // 換算滑鼠在原始圖片上的像素座標 (x, y)
+          const mouseX = e.clientX - rect.left - offsetX;
+          const mouseY = e.clientY - rect.top - offsetY;
+
+          if (
+            mouseX < 0 ||
+            mouseY < 0 ||
+            mouseX > renderW ||
+            mouseY > renderH
+          ) {
+            wrapper.classList.remove("is-hovered");
+            return;
+          }
+
+          const pixelX = Math.floor((mouseX / renderW) * canvas.width);
+          const pixelY = Math.floor((mouseY / renderH) * canvas.height);
+
+          try {
+            // 讀取該座標的 Alpha 透明度 (0 = 完全透明, 255 = 完全不透明)
+            const alpha = ctx.getImageData(pixelX, pixelY, 1, 1).data[3];
+            if (alpha > 10) {
+              wrapper.classList.add("is-hovered");
+            } else {
+              wrapper.classList.remove("is-hovered");
+            }
+          } catch (err) {
+            // 若在本地端直接雙擊開啟 HTML (file://) 被瀏覽器安全限制擋下，則退回一般換圖
+            wrapper.classList.add("is-hovered");
+          }
+        });
+
+        wrapper.addEventListener("mouseleave", () => {
+          wrapper.classList.remove("is-hovered");
+        });
+      });
+    </script>
+  </body>
+</html>
