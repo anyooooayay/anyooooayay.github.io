@@ -646,3 +646,77 @@ body {
 img {
   image-rendering: pixelated; /* 讓所有像素圖在高解析度螢幕上保持銳利顆粒感！ */
 }
+/* 獎狀彈窗加寬，容納左右對照區 */
+.certificate-box {
+  max-width: 720px;
+  width: 90vw;
+  padding: 25px 35px;
+}
+
+.cert-info {
+  display: flex;
+  justify-content: space-around;
+  background: #fdf6e3;
+  border: 3px solid #5a2d18;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  font-size: 17px;
+  color: #3b1e10;
+  font-weight: bold;
+}
+
+/* 左右並排對照區 */
+.photo-compare-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+
+.char-ref-box,
+.camera-box {
+  width: 260px;
+  height: 260px;
+  border: 5px solid #5a2d18;
+  background-color: #222;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.char-ref-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background-color: #fff;
+}
+
+/* 攝影機與畫布（水平翻轉成鏡像模式，玩家看鏡頭才不會左右相反） */
+#player-webcam,
+#photo-canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.box-label {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: rgba(90, 45, 24, 0.9);
+  color: #ffd23f;
+  font-size: 14px;
+  padding: 4px 0;
+  text-align: center;
+}
+
+.camera-controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}

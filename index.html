@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>勇闖視傳系</title>
     <link rel="stylesheet" href="../css/style.css" />
-    <link rel="icon" type="image/png" href="../img/小裝飾/Iconeye1.png" />
+    <link rel="icon" type="image/png" href="img/小裝飾/Iconeye1.png" />
     <style>
       img {
         image-rendering: pixelated; /* 讓所有像素圖在高解析度螢幕上保持銳利顆粒感！ */
@@ -64,19 +64,17 @@
     </style>
   </head>
   <body>
-    <!-- 3. 裡面裝載你們原本的所有網頁 -->
-    <iframe id="game-frame" src="0102/01.html"></iframe>
-
-    <!-- 4. 加上這行：復古 CRT 螢幕掃描線＋暗角濾鏡（完全不擋滑鼠點擊） -->
-    <div class="crt-overlay"></div>
-    <!-- 1. 全站唯一的背景音樂播放器（永遠不會因為換頁而中斷！） -->
+    <!-- 1. 全站唯一的背景音樂播放器（永遠不會因為換頁而中斷） -->
     <audio id="global-bgm" src="sound/背景音樂.mp3" loop preload="auto"></audio>
 
     <!-- 2. 右上角全站通用音樂開關 -->
     <button id="global-bgm-btn" title="開關背景音樂">🔊</button>
 
-    <!-- 3. 裡面裝載你們原本的所有網頁（預設從 01.html 開始） -->
-    <iframe id="game-frame" src="0102/01.html"></iframe>
+    <!-- 3. 滿版遊戲畫面視窗（只保留這一個，並加上 allow="camera *" 允許內部開啟相機） -->
+    <iframe id="game-frame" src="0102/01.html" allow="camera *"></iframe>
+
+    <!-- 4. 復古 CRT 螢幕掃描線＋暗角濾鏡 -->
+    <div class="crt-overlay"></div>
 
     <script>
       const bgm = document.getElementById("global-bgm");
@@ -95,7 +93,6 @@
             bgmBtn.textContent = "🔊";
           })
           .catch(() => {
-            // 若瀏覽器第一次阻擋自動播放，等玩家點擊畫面任何地方（如首頁眼睛）立刻自動啟動！
             bgmBtn.textContent = "🔇";
           });
       }

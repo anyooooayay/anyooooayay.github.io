@@ -32,7 +32,8 @@
         </div>
       </div>
     </div>
-    <!-- 答題背景音樂（加上 loop 讓音樂無限循環播放） -->
+
+    <!-- 答題背景音樂 -->
     <audio
       id="quiz-bgm"
       src="../sound/做題中音樂.wav"
@@ -40,13 +41,14 @@
       preload="auto"
     ></audio>
 
-    <!-- 按鈕點擊音效 -->
+    <!-- 按鈕與倒數點擊音效 -->
     <audio id="sfx-click" src="../sound/按鈕聲.wav" preload="auto"></audio>
 
-    <!-- 選配：答對與答錯音效（如果沒有準備可先不放或留著不影響運作） -->
+    <!-- 答對與答錯音效 -->
     <audio id="sfx-correct" src="../audio/correct.mp3" preload="auto"></audio>
     <audio id="sfx-wrong" src="../audio/wrong.mp3" preload="auto"></audio>
-    <!-- ② 3、2、1、START 準備倒數畫面（四張獨立圖片輪流切換） -->
+
+    <!-- ② 3、2、1、START 準備倒數畫面 -->
     <div id="countdown-overlay" class="overlay" style="display: none">
       <img
         id="countdown-img"
@@ -56,8 +58,8 @@
       />
     </div>
 
-    <!-- ③-1 結算中過場動畫畫面（答完 5 題後先播放 2.2 秒） -->
-    <div id="calculating-modal" class="overlay" style="display: none">
+    <!-- ③-1 結算中過場動畫畫面（id 統一改為 calc-modal 與 JS 對齊） -->
+    <div id="calc-modal" class="overlay" style="display: none">
       <div class="calc-box">
         <div class="calc-spinner"></div>
         <h2 class="calc-text">
@@ -67,51 +69,70 @@
       </div>
     </div>
 
-    <!-- ③-2 挑戰成功：逃出異世界拍照獎狀畫面 -->
-    <div id="success-modal" class="overlay success-bg" style="display: none">
-      <div class="certificate-stage">
-        <!-- 左側：獎狀主體（建議之後可換成你們自己畫的獎狀底圖） -->
-        <div class="certificate-card" id="certificate-area">
-          <div class="cert-header">★ 異世界空間脫逃證明書 ★</div>
-          <div class="cert-score-tag" id="cert-score-display">
-            通關成績：5 / 5 題
+    <!-- ③-2 挑戰成功獎狀彈窗（含即時拍照功能與分享按鈕，已清理多餘標籤） -->
+    <div id="success-modal" class="overlay" style="display: none">
+      <div class="pixel-dialog-box certificate-box">
+        <div class="dialog-title" style="background-color: #2e9e5b">
+          🎉 挑戰成功！逃出異世界！
+        </div>
+
+        <!-- 獎狀資訊區 -->
+        <div class="cert-info">
+          <p>挑戰者：<span id="cert-player-name">視傳系勇者</span></p>
+          <p id="cert-score-display">通關成績：5 / 5 題</p>
+          <p>日期：<span id="cert-date">2026.11.20</span></p>
+        </div>
+
+        <!-- 雙欄對照區：左邊是老師姿勢，右邊是玩家即時相機 -->
+        <div class="photo-compare-area">
+          <div class="char-ref-box">
+            <img
+              id="cert-char-img"
+              src="../img/角色/角色1.png"
+              alt="模仿角色"
+            />
+            <span class="box-label">▲ 模仿老師的姿勢！</span>
           </div>
 
-          <p class="cert-body-text">
-            茲證明挑戰者
-            <span id="cert-player-name" class="cert-highlight">勇者</span><br />
-            成功破解視傳系所有空間謎題，順利逃離異世界！<br />
-            <span class="cert-pose-hint"
-              >【請站在右側角色旁模仿動作，拍下你的真實樣貌！】</span
-            >
-          </p>
-
-          <div class="cert-footer">
-            <span>ESCAPE FROM VCD</span>
-            <span id="cert-date">2026</span>
+          <div class="camera-box">
+            <video id="player-webcam" autoplay playsinline></video>
+            <canvas id="photo-canvas" style="display: none"></canvas>
+            <span class="box-label">▲ 你的通關紀念照</span>
           </div>
         </div>
 
-        <!-- 右側：玩家選的像素角色大圖（供使用者現場模仿姿勢拍照） -->
-        <div class="pose-character-box">
-          <div class="pose-bubble">快模仿我的姿勢一起拍照！</div>
-          <img
-            id="cert-char-img"
-            class="cert-char-pic"
-            src="../img/角色/角色1.png"
-            alt="模仿角色"
-          />
+        <!-- 拍照、重拍、分享與回首頁按鈕 -->
+        <div class="camera-controls">
+          <button
+            id="snap-btn"
+            class="pixel-action-btn"
+            onclick="takeSnapshot()"
+          >
+            📸 拍下通關照
+          </button>
+          <button
+            id="retake-btn"
+            class="pixel-action-btn"
+            style="display: none; background-color: #555"
+            onclick="retakePhoto()"
+          >
+            🔄 重拍一張
+          </button>
+          <button
+            class="pixel-action-btn"
+            style="background-color: #2980b9"
+            onclick="shareResult()"
+          >
+            📤 分享戰績
+          </button>
+          <button
+            class="pixel-action-btn"
+            style="background-color: #e69d00"
+            onclick="restartWholeGame()"
+          >
+            🏠 回到首頁
+          </button>
         </div>
-      </div>
-
-      <!-- 下方功能按鈕區（拍照提示 / 分享結果 / 再玩一次） -->
-      <div class="result-btn-group">
-        <button class="pixel-action-btn btn-share" onclick="shareResult()">
-          📤 分享脫逃結果
-        </button>
-        <button class="pixel-action-btn btn-retry" onclick="location.reload()">
-          🔄 再玩一次
-        </button>
       </div>
     </div>
 
@@ -124,7 +145,7 @@
           訊號干擾過強！<br />
           你與老師暫時被困在視傳系異世界，差一點點就能逃出去了！
         </p>
-        <button class="pixel-action-btn btn-retry" onclick="location.reload()">
+        <button class="pixel-action-btn btn-retry" onclick="restartWholeGame()">
           🔄 再玩一次
         </button>
       </div>
@@ -132,10 +153,8 @@
 
     <!-- ④ 遊戲主畫面（滿版 16:9 容器） -->
     <div class="game-container">
-      <!-- 底層：題目頁背景圖 -->
       <img class="bg-img" src="../img/背景/題目背景倒方.png" alt="題目背景" />
 
-      <!-- 圖層 1：上方倒數計時軌道（紅線＋小懷錶往左移動） -->
       <div class="timer-track">
         <img
           id="timer-bar-img"
@@ -144,7 +163,6 @@
         />
       </div>
 
-      <!-- 圖層 2：左側掌機螢幕裡的線索圖 -->
       <img
         id="clue-img"
         class="clue-screen-img"
@@ -157,15 +175,12 @@
         src="../img/題目/題目一左內.png"
         alt="題目一左內"
       />
-      <!-- 圖層 3-底框：右側題目與選項的固定外框 -->
       <img
         id="right-frame-img"
         class="right-frame-img"
         src="../img/題目/題目框.png"
         alt="右側題目框"
       />
-
-      <!-- 圖層 3：右側題目文字圖片 -->
       <img
         id="question-img"
         class="question-title-img"
@@ -173,7 +188,6 @@
         alt="題目"
       />
 
-      <!-- 圖層 4：A、B、C、D 選項按鈕圖片區 -->
       <div class="options-grid">
         <div class="option-item" data-index="0">
           <img class="opt-img" src="../img/題目/題目一a.png" alt="選項A" />
@@ -189,7 +203,8 @@
         </div>
       </div>
     </div>
-    <!-- ②-2 答對 / 答錯 結果圖片回饋畫面 -->
+
+    <!-- 答對 / 答錯 結果圖片回饋畫面 -->
     <div id="feedback-overlay" class="overlay" style="display: none">
       <img id="feedback-img" src="../img/題目/答對.png" alt="答題結果" />
     </div>
@@ -598,6 +613,7 @@
             document.getElementById("fail-score-text").textContent =
               `最終得分：${score} / 5 分`;
             document.getElementById("fail-modal").style.display = "flex";
+            startWebcam();
           }
         }, 2200);
       }
@@ -638,6 +654,63 @@
         } catch (e) {}
 
         window.location.href = "../0102/01.html"; // 回到首頁開始畫面
+      }
+      let webcamStream = null;
+
+      // 1. 啟動前鏡頭相機（在 showFinalResult() 裡 score >= 3 時呼叫它！）
+      function startWebcam() {
+        const video = document.getElementById("player-webcam");
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          navigator.mediaDevices
+            .getUserMedia({ video: { facingMode: "user" }, audio: false })
+            .then((stream) => {
+              webcamStream = stream;
+              video.srcObject = stream;
+            })
+            .catch((err) => {
+              console.log("無法開啟相機（可能未授權或無鏡頭）：", err);
+              alert("請允許瀏覽器使用相機，才能拍下通關紀念照喔！");
+            });
+        }
+      }
+
+      // 2. 按下「拍下通關照」快門
+      function takeSnapshot() {
+        const video = document.getElementById("player-webcam");
+        const canvas = document.getElementById("photo-canvas");
+        const snapBtn = document.getElementById("snap-btn");
+        const retakeBtn = document.getElementById("retake-btn");
+
+        // 設定畫布尺寸與鏡頭一致，並把當前畫面畫上去定格
+        canvas.width = video.videoWidth || 400;
+        canvas.height = video.videoHeight || 400;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // 隱藏動態鏡頭，顯示定格照片
+        video.style.display = "none";
+        canvas.style.display = "block";
+
+        // 切換按鈕為「重拍一張」
+        snapBtn.style.display = "none";
+        retakeBtn.style.display = "inline-block";
+
+        // 播放快門音效（共用你們的按鈕音效）
+        if (typeof playClickSound === "function") playClickSound();
+      }
+
+      // 3. 按下「重拍一張」恢復即時鏡頭
+      function retakePhoto() {
+        const video = document.getElementById("player-webcam");
+        const canvas = document.getElementById("photo-canvas");
+        const snapBtn = document.getElementById("snap-btn");
+        const retakeBtn = document.getElementById("retake-btn");
+
+        canvas.style.display = "none";
+        video.style.display = "block";
+
+        retakeBtn.style.display = "none";
+        snapBtn.style.display = "inline-block";
       }
     </script>
   </body>
