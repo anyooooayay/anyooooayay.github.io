@@ -153,6 +153,37 @@
           }, 800);
         });
       }
+      // 滑鼠移動時產生復古像素小星星拖尾特效
+      document.addEventListener("mousemove", (e) => {
+        // 降低產生頻率（約 30% 機率），避免畫面太雜亂
+        if (Math.random() > 0.3) return;
+
+        const pixel = document.createElement("div");
+        pixel.style.position = "fixed";
+        pixel.style.left = `${e.clientX}px`;
+        pixel.style.top = `${e.clientY}px`;
+        pixel.style.width = "6px";
+        pixel.style.height = "6px";
+        pixel.style.backgroundColor = "#ffd23f"; // 金黃色像素點
+        pixel.style.boxShadow = "0 0 4px #ffffff";
+        pixel.style.pointerEvents = "none";
+        pixel.style.zIndex = "99998";
+        pixel.style.transition =
+          "transform 0.5s ease-out, opacity 0.5s ease-out";
+
+        document.body.appendChild(pixel);
+
+        // 下一幀開始往下微飄並淡出
+        requestAnimationFrame(() => {
+          pixel.style.transform = `translate(${(Math.random() - 0.5) * 20}px, 15px) scale(0.2)`;
+          pixel.style.opacity = "0";
+        });
+
+        // 0.5 秒後自動移除，完全不佔記憶體
+        setTimeout(() => {
+          pixel.remove();
+        }, 500);
+      });
     </script>
   </body>
 </html>

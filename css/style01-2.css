@@ -205,3 +205,6 @@ body {
   white-space: nowrap;
   z-index: 20;
 }
+img {
+  image-rendering: pixelated; /* 讓所有像素圖在高解析度螢幕上保持銳利顆粒感！ */
+}

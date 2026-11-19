@@ -628,6 +628,17 @@
       // 啟動預載與第一關
       preloadAllImages();
       loadStage();
+
+      // 寫在 03.html 的「回到首頁 / 重新挑戰」按鈕點擊事件裡
+      function restartWholeGame() {
+        try {
+          const parentBgmBtn =
+            window.parent.document.getElementById("global-bgm-btn");
+          if (parentBgmBtn) parentBgmBtn.style.display = "flex"; // 恢復顯示外層喇叭按鈕
+        } catch (e) {}
+
+        window.location.href = "../0102/01.html"; // 回到首頁開始畫面
+      }
     </script>
   </body>
 </html>
