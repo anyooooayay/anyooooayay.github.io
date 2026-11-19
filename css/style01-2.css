@@ -118,3 +118,76 @@ body {
   left: 88%;
   width: 130px;
 }
+/* 引入夜照飛 12 字體 */
+@font-face {
+  font-family: "YeZhaoFei12";
+  src: url("../fonts/yezhaofei12.ttf");
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: "YeZhaoFei12";
+  src: url("../fonts/yezhaofei12B.ttf");
+  font-weight: bold;
+}
+
+/* 黃色外框正中央的文字容器 */
+.yellow-frame-content {
+  position: absolute;
+  top: 28%;
+  left: 18%;
+  width: 65%;
+  height: 45%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-family: "YeZhaoFei12", sans-serif;
+  -webkit-font-smoothing: none;
+  z-index: 10;
+}
+
+/* 前五句故事白字（清除 p 標籤預設外邊距） */
+.story-line {
+  margin: 0; /* 關鍵：把原本撐開行距的上下外邊距歸零！ */
+  padding: 0;
+  color: #ffffff;
+  font-size: 1.6vw;
+  line-height: 1.8;
+  letter-spacing: 2px;
+  text-shadow: 2px 2.3px 0px #5a2628;
+  white-space: nowrap;
+}
+
+/* 最後一句粗體問句 */
+.question-line {
+  margin: 32px 0 0 0; /* 只保留上方 16px 的間隔，其餘歸零 */
+  color: #f4ea71;
+  font-size: 2.1vw;
+  line-height: 2;
+  font-weight: bold;
+  letter-spacing: 3px;
+}
+/* 第一行與提示字的共用定位容器 */
+.first-line-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* 提示字：直接重疊在第一行正上方，點擊隱藏後不影響版面高度 */
+#click-to-start {
+  position: absolute;
+  margin: 0;
+  color: #f4ea71; /* 配合你最後一句問句的金黃色 */
+  font-size: 1.7vw;
+  font-weight: bold;
+  cursor: pointer;
+  text-shadow: 2px 2.3px 0px #5a2628; /* 配合你故事文字的深紅棕陰影 */
+  letter-spacing: 3px;
+  white-space: nowrap;
+  z-index: 20;
+}

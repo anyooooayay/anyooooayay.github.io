@@ -1,11 +1,613 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>勇闖視傳系</title>
+    <link rel="stylesheet" href="../css/style03.css" />
+    <link rel="icon" type="image/png" href="../img/小裝飾/Iconeye1.png" />
+  </head>
+  <body>
+    <!-- ① 關卡故事情境彈窗（純圖片 + 零跳動 READY 變色按鈕） -->
+    <div id="story-modal" class="intro-overlay">
+      <div class="intro-popup-box">
+        <img
+          id="story-popup-img"
+          class="popup-main-img"
+          src="../img/情境框/題目一情境.png"
+          alt="關卡情境說明"
+        />
+
+        <div id="ready-btn" class="intro-ready-btn">
+          <img
+            class="intro-btn-normal"
+            src="../img/按鈕/按鈕深ready.png"
+            alt="READY"
+          />
+          <img
+            class="intro-btn-hover"
+            src="../img/按鈕/按鈕淺ready.png"
+            alt="READY"
+          />
+        </div>
+      </div>
+    </div>
+    <!-- 答題背景音樂（加上 loop 讓音樂無限循環播放） -->
+    <audio
+      id="quiz-bgm"
+      src="../sound/做題中音樂.wav"
+      loop
+      preload="auto"
+    ></audio>
+
+    <!-- 按鈕點擊音效 -->
+    <audio id="sfx-click" src="../sound/按鈕聲.wav" preload="auto"></audio>
+
+    <!-- 選配：答對與答錯音效（如果沒有準備可先不放或留著不影響運作） -->
+    <audio id="sfx-correct" src="../audio/correct.mp3" preload="auto"></audio>
+    <audio id="sfx-wrong" src="../audio/wrong.mp3" preload="auto"></audio>
+    <!-- ② 3、2、1、START 準備倒數畫面（四張獨立圖片輪流切換） -->
+    <div id="countdown-overlay" class="overlay" style="display: none">
+      <img
+        id="countdown-img"
+        class="countdown-pic"
+        src="../img/題目/倒數三.png"
+        alt="倒數圖片"
+      />
+    </div>
+
+    <!-- ③-1 結算中過場動畫畫面（答完 5 題後先播放 2.2 秒） -->
+    <div id="calculating-modal" class="overlay" style="display: none">
+      <div class="calc-box">
+        <div class="calc-spinner"></div>
+        <h2 class="calc-text">
+          系統結算空間訊號中<span class="dots">...</span>
+        </h2>
+        <p class="calc-subtext">正在解析你的脫逃數據</p>
+      </div>
+    </div>
+
+    <!-- ③-2 挑戰成功：逃出異世界拍照獎狀畫面 -->
+    <div id="success-modal" class="overlay success-bg" style="display: none">
+      <div class="certificate-stage">
+        <!-- 左側：獎狀主體（建議之後可換成你們自己畫的獎狀底圖） -->
+        <div class="certificate-card" id="certificate-area">
+          <div class="cert-header">★ 異世界空間脫逃證明書 ★</div>
+          <div class="cert-score-tag" id="cert-score-display">
+            通關成績：5 / 5 題
+          </div>
+
+          <p class="cert-body-text">
+            茲證明挑戰者
+            <span id="cert-player-name" class="cert-highlight">勇者</span><br />
+            成功破解視傳系所有空間謎題，順利逃離異世界！<br />
+            <span class="cert-pose-hint"
+              >【請站在右側角色旁模仿動作，拍下你的真實樣貌！】</span
+            >
+          </p>
+
+          <div class="cert-footer">
+            <span>ESCAPE FROM VCD</span>
+            <span id="cert-date">2026</span>
+          </div>
+        </div>
+
+        <!-- 右側：玩家選的像素角色大圖（供使用者現場模仿姿勢拍照） -->
+        <div class="pose-character-box">
+          <div class="pose-bubble">快模仿我的姿勢一起拍照！</div>
+          <img
+            id="cert-char-img"
+            class="cert-char-pic"
+            src="../img/角色/角色1.png"
+            alt="模仿角色"
+          />
+        </div>
+      </div>
+
+      <!-- 下方功能按鈕區（拍照提示 / 分享結果 / 再玩一次） -->
+      <div class="result-btn-group">
+        <button class="pixel-action-btn btn-share" onclick="shareResult()">
+          📤 分享脫逃結果
+        </button>
+        <button class="pixel-action-btn btn-retry" onclick="location.reload()">
+          🔄 再玩一次
+        </button>
+      </div>
+    </div>
+
+    <!-- ③-3 挑戰失敗畫面 -->
+    <div id="fail-modal" class="overlay fail-bg" style="display: none">
+      <div class="pixel-dialog-box fail-box">
+        <div class="dialog-title">挑戰失敗...</div>
+        <h3 id="fail-score-text" class="dialog-subtitle">最終得分：0 / 5 分</h3>
+        <p class="dialog-text">
+          訊號干擾過強！<br />
+          你與老師暫時被困在視傳系異世界，差一點點就能逃出去了！
+        </p>
+        <button class="pixel-action-btn btn-retry" onclick="location.reload()">
+          🔄 再玩一次
+        </button>
+      </div>
+    </div>
+
+    <!-- ④ 遊戲主畫面（滿版 16:9 容器） -->
+    <div class="game-container">
+      <!-- 底層：題目頁背景圖 -->
+      <img class="bg-img" src="../img/背景/題目背景倒方.png" alt="題目背景" />
+
+      <!-- 圖層 1：上方倒數計時軌道（紅線＋小懷錶往左移動） -->
+      <div class="timer-track">
+        <img
+          id="timer-bar-img"
+          src="../img/題目/倒數計時紅方.png"
+          alt="倒數計時條"
+        />
+      </div>
+
+      <!-- 圖層 2：左側掌機螢幕裡的線索圖 -->
+      <img
+        id="clue-img"
+        class="clue-screen-img"
+        src="../img/題目/圖片框.png"
+        alt="線索圖"
+      />
+      <img
+        id="pic-img"
+        class="pic-img"
+        src="../img/題目/題目一左內.png"
+        alt="題目一左內"
+      />
+      <!-- 圖層 3-底框：右側題目與選項的固定外框 -->
+      <img
+        id="right-frame-img"
+        class="right-frame-img"
+        src="../img/題目/題目框.png"
+        alt="右側題目框"
+      />
+
+      <!-- 圖層 3：右側題目文字圖片 -->
+      <img
+        id="question-img"
+        class="question-title-img"
+        src="../img/題目/題目一.png"
+        alt="題目"
+      />
+
+      <!-- 圖層 4：A、B、C、D 選項按鈕圖片區 -->
+      <div class="options-grid">
+        <div class="option-item" data-index="0">
+          <img class="opt-img" src="../img/題目/題目一a.png" alt="選項A" />
+        </div>
+        <div class="option-item" data-index="1">
+          <img class="opt-img" src="../img/題目/題目一b.png" alt="選項B" />
+        </div>
+        <div class="option-item" data-index="2">
+          <img class="opt-img" src="../img/題目/題目一c.png" alt="選項C" />
+        </div>
+        <div class="option-item" data-index="3">
+          <img class="opt-img" src="../img/題目/題目一d.png" alt="選項D" />
+        </div>
+      </div>
+    </div>
+    <!-- ②-2 答對 / 答錯 結果圖片回饋畫面 -->
+    <div id="feedback-overlay" class="overlay" style="display: none">
+      <img id="feedback-img" src="../img/題目/答對.png" alt="答題結果" />
+    </div>
+    <!-- JavaScript 遊戲邏輯 -->
+    <script>
+      // 1. 五題完整題庫（每一題都有情境框，並自動切換 picImg、questionImg、optionImgs）
+      const quizData = [
+        {
+          // 第 1 題
+          showStory: true,
+          storyImg: "../img/情境框/題目一情境.png",
+          picImg: "../img/題目/題目一左內.png",
+          questionImg: "../img/題目/題目一.png",
+          optionImgs: [
+            "../img/題目/題目一a.png",
+            "../img/題目/題目一b.png",
+            "../img/題目/題目一c.png",
+            "../img/題目/題目一d.png",
+          ],
+          answer: 1, // B (0=A, 1=B, 2=C, 3=D)
+        },
+        {
+          // 第 2 題
+          showStory: true,
+          storyImg: "../img/情境框/題目二情境.png",
+          picImg: "../img/題目/裸女.png",
+          questionImg: "../img/題目/題目二.png",
+          optionImgs: [
+            "../img/題目/題目二a.png",
+            "../img/題目/題目二b.png",
+            "../img/題目/題目二c.png",
+            "../img/題目/題目二d.png",
+          ],
+          answer: 1, // B
+        },
+        {
+          // 第 3 題
+          showStory: true,
+          storyImg: "../img/情境框/題目三情境.png",
+          clueImg: "../img/題目/題目三合成圖.png", // ← 換成你們合成好的第 3 題左側大圖檔名
+          picImg: "", // ← 留空，程式會自動隱藏內圖
+          questionImg: "../img/題目/題目三.png",
+          optionImgs: [
+            "../img/題目/題目三a.png",
+            "../img/題目/題目三b.png",
+            "../img/題目/題目三c.png",
+            "../img/題目/題目三d.png",
+          ],
+          answer: 1, // B
+        },
+        {
+          // 第 4 題
+          showStory: true,
+          storyImg: "../img/情境框/題目四情境.png",
+          clueImg: "../img/題目/題目四合成圖.png", // ← 換成你們合成好的第 4 題左側大圖檔名
+          picImg: "", // ← 留空，程式會自動隱藏內圖
+          questionImg: "../img/題目/題目四.png",
+          optionImgs: [
+            "../img/題目/題目四a.png",
+            "../img/題目/題目四b.png",
+            "../img/題目/題目四c.png",
+            "../img/題目/題目四d.png",
+          ],
+          answer: 2, // C
+        },
+        {
+          // 第 5 題
+          showStory: true,
+          storyImg: "../img/情境框/題目五情境.png",
+          clueImg: "../img/題目/題目五合成圖.png", // ← 換成你們合成好的第 5 題左側大圖檔名
+          picImg: "", // ← 留空，程式會自動隱藏內圖
+          questionImg: "../img/題目/題目五.png",
+          optionImgs: [
+            "../img/題目/題目五a.png",
+            "../img/題目/題目五b.png",
+            "../img/題目/題目五c.png",
+            "../img/題目/題目五d.png",
+          ],
+          answer: 3, // D
+        },
+      ];
+
+      // 2. 倒數圖片 & 答對/答錯圖片路徑（請確認答對、答錯的檔名是否正確）
+      const countdownImages = [
+        "../img/題目/倒數三.png",
+        "../img/題目/倒數二.png",
+        "../img/題目/倒數一.png",
+        "../img/題目/start.png",
+      ];
+      const correctImgSrc = "../img/題目/答對.png"; // ← 請確認你們的「答對圖」檔名
+      const wrongImgSrc = "../img/題目/答錯.png"; // ← 請確認你們的「答錯圖」檔名
+
+      let currentIndex = 0;
+      let score = 0;
+      let quizTimer = null;
+      let isAnswering = false; // 防止玩家重複點擊選項
+
+      // 3. 統一抓取所有 HTML 元素
+      const storyModal = document.getElementById("story-modal");
+      const storyPopupImg = document.getElementById("story-popup-img");
+      const readyBtn = document.getElementById("ready-btn");
+      const countdownOverlay = document.getElementById("countdown-overlay");
+      const countdownImg = document.getElementById("countdown-img");
+      const feedbackOverlay = document.getElementById("feedback-overlay");
+      const feedbackImg = document.getElementById("feedback-img");
+      const timerImg = document.getElementById("timer-bar-img");
+      const picImg = document.getElementById("pic-img");
+      const questionImg = document.getElementById("question-img");
+      const optionItems = document.querySelectorAll(".option-item");
+      const clueImg = document.getElementById("clue-img");
+      const quizBgm = document.getElementById("quiz-bgm");
+      let isBgmUnlocked = false;
+      const sfxCorrect = document.getElementById("sfx-correct");
+      const sfxWrong = document.getElementById("sfx-wrong");
+
+      // 黃金音量比例：背景音樂柔和陪襯 (0.3)，答題音效清脆明顯 (0.75)
+      if (quizBgm) quizBgm.volume = 0.3;
+      if (sfxCorrect) sfxCorrect.volume = 0.75;
+      if (sfxWrong) sfxWrong.volume = 0.7;
+      // 4. 背景預載所有圖片（包含題庫、倒數圖與答對/答錯圖）
+      function preloadAllImages() {
+        quizData.forEach((item) => {
+          if (item.storyImg) new Image().src = item.storyImg;
+          if (item.clueImg) new Image().src = item.clueImg;
+          if (item.picImg) new Image().src = item.picImg;
+          if (item.questionImg) new Image().src = item.questionImg;
+          item.optionImgs.forEach((src) => {
+            new Image().src = src;
+          });
+        });
+
+        countdownImages.forEach((src) => {
+          new Image().src = src;
+        });
+
+        new Image().src = correctImgSrc;
+        new Image().src = wrongImgSrc;
+      }
+
+      // 第 5 區：載入當前題目
+      function loadStage() {
+        const data = quizData[currentIndex];
+
+        // 第 1～3 題沒設 clueImg，自動維持預設外框；第 4、5 題則換成合成大圖
+        clueImg.src = data.clueImg || "../img/題目/圖片框.png";
+
+        // 有設內圖（第 1～3 題）就顯示；留空（第 4、5 題）就直接隱藏
+        if (data.picImg) {
+          picImg.src = data.picImg;
+          picImg.style.display = "block";
+        } else {
+          picImg.style.display = "none";
+        }
+
+        questionImg.src = data.questionImg;
+
+        optionItems.forEach((item, idx) => {
+          const imgTag = item.querySelector(".opt-img");
+          if (data.optionImgs[idx]) {
+            imgTag.src = data.optionImgs[idx];
+            item.style.display = "block";
+          } else {
+            item.style.display = "none";
+          }
+        });
+
+        if (data.showStory) {
+          storyPopupImg.src = data.storyImg;
+          storyModal.style.display = "flex";
+        } else {
+          startReadyCountdown();
+        }
+      }
+
+      /// 點擊 READY 按鈕
+      readyBtn.addEventListener("click", () => {
+        storyModal.style.display = "none";
+
+        // 先在點擊瞬間「靜音預熱」解鎖瀏覽器播放權限，等 321 結束再正式出聲
+        if (quizBgm && !isBgmUnlocked) {
+          quizBgm.muted = true;
+          quizBgm
+            .play()
+            .then(() => {
+              quizBgm.pause();
+              quizBgm.currentTime = 0;
+              quizBgm.muted = false;
+              isBgmUnlocked = true;
+            })
+            .catch(() => {});
+        }
+
+        startReadyCountdown();
+      });
+      // 依序播放 4 張倒數圖片
+      function startReadyCountdown() {
+        countdownOverlay.style.display = "flex";
+        let step = 0;
+
+        countdownImg.src = countdownImages[0];
+        triggerPopAnimation(countdownImg);
+
+        const readyInterval = setInterval(() => {
+          step++;
+          if (step < countdownImages.length) {
+            countdownImg.src = countdownImages[step];
+            triggerPopAnimation(countdownImg);
+          } else {
+            clearInterval(readyInterval);
+            countdownOverlay.style.display = "none";
+            startQuestionTimer();
+          }
+        }, 1000);
+      }
+
+      // 圖片彈出動畫共用函式
+      function triggerPopAnimation(targetImg) {
+        targetImg.classList.remove("pop-anim");
+        void targetImg.offsetWidth;
+        targetImg.classList.add("pop-anim");
+      }
+
+      // 10 秒作答計時（3、2、1、START 結束後正式進入題目並從頭播放音樂）
+      function startQuestionTimer() {
+        if (quizBgm) {
+          quizBgm.muted = false;
+          quizBgm.currentTime = 0; // 確保每一題都從音樂開頭播放
+          quizBgm.play().catch(() => {});
+        }
+
+        clearInterval(quizTimer);
+        // ...後面的計時程式碼維持不變
+        isAnswering = true;
+        let timeLeft = 10;
+
+        timerImg.style.transition = "none";
+        timerImg.style.transform = "translateX(0%)";
+
+        setTimeout(() => {
+          timerImg.style.transition = "transform 10s linear";
+          timerImg.style.transform = "translateX(-95%)";
+        }, 50);
+
+        quizTimer = setInterval(() => {
+          timeLeft--;
+          if (timeLeft <= 0) {
+            clearInterval(quizTimer);
+            isAnswering = false;
+            // 時間到：觸發答錯圖片 + 全螢幕紅光震動（無文字彈窗）
+            showAnswerFeedback(false);
+          }
+        }, 1000);
+      }
+
+      // 7. 點擊選項判斷對錯與計分（完全無 alert 訊息提示）
+      optionItems.forEach((item) => {
+        item.addEventListener("click", () => {
+          if (!isAnswering) return;
+          isAnswering = false;
+
+          clearInterval(quizTimer);
+          timerImg.style.transition = "none";
+
+          const selectedIndex = parseInt(item.getAttribute("data-index"));
+          const isCorrect = selectedIndex === quizData[currentIndex].answer;
+
+          if (isCorrect) {
+            score++;
+          }
+
+          showAnswerFeedback(isCorrect);
+        });
+      });
+
+      // 8. 顯示答對／答錯圖片（答題結束立刻停止背景音樂）
+      function showAnswerFeedback(isCorrect) {
+        // 作答結束，立刻停止背景音樂並歸零（看情境框與321倒數期間保持安靜）
+        if (quizBgm) {
+          quizBgm.pause();
+          quizBgm.currentTime = 0;
+        }
+
+        feedbackImg.src = isCorrect ? correctImgSrc : wrongImgSrc;
+        feedbackOverlay.style.display = "flex";
+        // ...後面的顯示動畫與答對/答錯音效維持不變
+
+        // 清除上一題殘留的動畫狀態
+        feedbackOverlay.classList.remove("shake-red-fx", "flash-yellow-fx");
+        feedbackImg.classList.remove("pop-anim");
+        void feedbackOverlay.offsetWidth;
+
+        if (isCorrect) {
+          feedbackOverlay.classList.add("flash-yellow-fx");
+          if (sfxCorrect) {
+            sfxCorrect.currentTime = 0;
+            sfxCorrect.play().catch(() => {});
+          }
+        } else {
+          feedbackOverlay.classList.add("shake-red-fx");
+          triggerPopAnimation(feedbackImg);
+          if (sfxWrong) {
+            sfxWrong.currentTime = 0;
+            sfxWrong.play().catch(() => {});
+          }
+        }
+
+        // 停留 2000 毫秒（2 秒）後再自動關閉並進入下一題
+        setTimeout(() => {
+          feedbackOverlay.style.display = "none";
+          feedbackOverlay.classList.remove("shake-red-fx", "flash-yellow-fx");
+          nextQuestion();
+        }, 2000); // ← 把原本的 1100 改成 2000（或 2500）
+      }
+      // 9. 切換下一題或進入結算
+      function nextQuestion() {
+        currentIndex++;
+        if (currentIndex < quizData.length) {
+          loadStage();
+        } else {
+          showFinalResult();
+        }
+      }
+
+      /// 角色對照表（請確認鍵值與選角頁的 data-char 一致，路徑換成你們的角色全身/半身大圖）
+      const resultCharacterMap = {
+        "角色 1": "../img/角色/角色1.png",
+        "角色 2": "../img/角色/角色2.png",
+        "角色 3": "../img/角色/角色3.png",
+      };
+
+      // 10. 答題結束：先播放「結算中動畫」2.2 秒，再依分數跳轉成功或失敗畫面
+      function showFinalResult() {
+        // 五題全部答完進入結算，停止答題背景音樂
+        if (quizBgm) {
+          quizBgm.pause();
+          quizBgm.currentTime = 0;
+        }
+
+        // ...原本的結算畫面程式碼維持不變
+
+        // 2.2 秒後關閉結算動畫，進入結果畫面
+        setTimeout(() => {
+          calcModal.style.display = "none";
+
+          // 讀取上一頁選角時存下來的「玩家暱稱」與「選擇的角色」
+          const savedName = localStorage.getItem("playerName") || "視傳系勇者";
+          const savedChar =
+            localStorage.getItem("selectedCharacter") || "角色 1";
+
+          if (score >= 3) {
+            // === 挑戰成功：顯示拍照獎狀 + 模仿角色 ===
+            document.getElementById("cert-player-name").textContent = savedName;
+            document.getElementById("cert-score-display").textContent =
+              `通關成績：${score} / 5 題`;
+
+            // 自動帶入今天日期
+            const today = new Date();
+            document.getElementById("cert-date").textContent =
+              `${today.getFullYear()}.${today.getMonth() + 1}.${today.getDate()}`;
+
+            // 套用玩家選的角色圖片供現場模仿拍照
+            const certCharImg = document.getElementById("cert-char-img");
+            if (resultCharacterMap[savedChar]) {
+              certCharImg.src = resultCharacterMap[savedChar];
+            }
+
+            document.getElementById("success-modal").style.display = "flex";
+          } else {
+            // === 挑戰失敗：顯示失敗畫面與再玩一次 ===
+            document.getElementById("fail-score-text").textContent =
+              `最終得分：${score} / 5 分`;
+            document.getElementById("fail-modal").style.display = "flex";
+          }
+        }, 2200);
+      }
+
+      // 11. 分享脫逃結果功能（支援手機原生分享面板 + 電腦自動複製戰績網址）
+      function shareResult() {
+        const savedName = localStorage.getItem("playerName") || "視傳系勇者";
+        const shareText = `【勇闖視傳系 ESCAPE FROM VCD】挑戰者「${savedName}」成功解開 ${score}/5 道空間謎題，順利逃出異世界啦！快來一起挑戰看看！`;
+        const shareUrl = window.location.origin; // 分享遊戲首頁網址
+
+        if (navigator.share) {
+          // 手機或支援原生分享的瀏覽器會直接跳出 LINE / IG / 訊息分享選單
+          navigator
+            .share({
+              title: "勇闖視傳系 ESCAPE FROM VCD",
+              text: shareText,
+              url: shareUrl,
+            })
+            .catch(() => {});
+        } else {
+          // 電腦版自動複製戰績文字與網址到剪貼簿
+          navigator.clipboard
+            .writeText(`${shareText}\n${shareUrl}`)
+            .then(() => {
+              alert("已複製你的通關戰績與遊戲網址！快貼上分享給朋友吧！");
+            });
+        }
+      }
+      const sfxClick = document.getElementById("sfx-click");
+      if (sfxClick) sfxClick.volume = 0.65; // 按鈕聲清脆適中（65%）
+
+      // 共用按鈕音效播放函式（支援快速連點，每次都會從頭響起）
+      function playClickSound() {
+        if (sfxClick) {
+          sfxClick.currentTime = 0;
+          sfxClick.play().catch(() => {});
+        }
+      }
+      // 自動幫所有可點擊的按鈕（READY、A/B/C/D 選項、結算按鈕）加上點擊音效
+      document
+        .querySelectorAll("#ready-btn, .option-item, .pixel-action-btn")
+        .forEach((btn) => {
+          btn.addEventListener("click", () => {
+            playClickSound();
+          });
+        });
+    </script>
+  </body>
 </html>

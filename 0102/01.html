@@ -1,22 +1,63 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>escapefromvcd</title>
+    <title>勇闖視傳系</title>
     <link rel="stylesheet" href="../css/style.css" />
+    <link rel="icon" type="image/png" href="../img/小裝飾/Iconeye1.png" />
   </head>
   <body>
-    <img src="../img/背景/網站01背景有字.jpg" class="background-img" />
-    <a href="../0102/01-2.html" class="next-page-link">
-      <img src="../img/小裝飾/眼睛.png" class="button-img" />
+    <img
+      src="../img/背景/首頁純背景.png"
+      class="background-img"
+      alt="首頁背景"
+    />
+    <!-- 首頁眼睛按鈕專屬音效 -->
+    <audio
+      id="eye-click-sfx"
+      src="../sound/進入按鈕音.wav"
+      preload="auto"
+    ></audio>
+    <!-- 首頁弧形主副標題 -->
+    <img
+      class="title-en title-fade-en"
+      src="../img/小裝飾/首頁英文.png"
+      alt="ESCAPE FROM VCD"
+    />
+    <img
+      class="title-zh title-fade-zh"
+      src="../img/小裝飾/勇闖視傳系.png"
+      alt="勇闖視傳系"
+    />
+
+    <!-- 眼睛按鈕連結 -->
+    <a href="../0102/01-2.html" class="next-page-link" id="eye-enter-link">
+      <img
+        src="../img/小裝飾/眼睛橘加底.png"
+        class="button-img"
+        alt="進入遊戲"
+      />
     </a>
-    <img src="../img/小裝飾/鼠標.png" class="mouse-img" />
+    <img src="../img/小裝飾/鼠標.png" class="mouse-img" alt="提示鼠標" />
+
     <!-- 閃亮亮 -->
-    <img src="../img/小裝飾/閃亮亮.png" class="bling-img" />
-    <img class="star-2 anim-bling delay-1" src="../img/小裝飾/閃亮亮.png" />
-    <img class="star-3 anim-bling delay-2" src="../img/小裝飾/閃亮亮.png" />
-    <img class="star-4 anim-bling delay-1" src="../img/小裝飾/閃亮亮.png" />
+    <img src="../img/小裝飾/閃亮亮.png" class="bling-img" alt="星星1" />
+    <img
+      class="star-2 anim-bling delay-1"
+      src="../img/小裝飾/閃亮亮.png"
+      alt="星星2"
+    />
+    <img
+      class="star-3 anim-bling delay-2"
+      src="../img/小裝飾/閃亮亮.png"
+      alt="星星3"
+    />
+    <img
+      class="star-4 anim-bling delay-1"
+      src="../img/小裝飾/閃亮亮.png"
+      alt="星星4"
+    />
 
     <!-- 六朵左右飄動的雲 -->
     <img class="cloud-1 anim-cloud" src="../img/雲朵/雲左一.png" alt="雲1" />
@@ -45,5 +86,73 @@
       src="../img/雲朵/雲右下.png"
       alt="雲6"
     />
+
+    <!-- 首頁動態與轉場腳本 -->
+    <script>
+      // ① 只有雲朵、星星與標題跟著滑鼠產生 3D 視差微動（背景完全固定不動）
+      const clouds = document.querySelectorAll(".anim-cloud");
+      const stars = document.querySelectorAll(".bling-img, .anim-bling");
+      const titleEn = document.querySelector(".title-en");
+      const titleZh = document.querySelector(".title-zh");
+
+      document.addEventListener("mousemove", (e) => {
+        const xRatio = e.clientX / window.innerWidth - 0.5;
+        const yRatio = e.clientY / window.innerHeight - 0.5;
+
+        clouds.forEach((cloud) => {
+          cloud.style.marginLeft = `${xRatio * 35}px`;
+          cloud.style.marginTop = `${yRatio * 25}px`;
+        });
+
+        stars.forEach((star) => {
+          star.style.marginLeft = `${xRatio * 45}px`;
+          star.style.marginTop = `${yRatio * 35}px`;
+        });
+
+        if (titleZh) {
+          titleZh.style.marginLeft = `${xRatio * 55}px`;
+          titleZh.style.marginTop = `${yRatio * 40}px`;
+        }
+        if (titleEn) {
+          titleEn.style.marginLeft = `${xRatio * 65}px`;
+          titleEn.style.marginTop = `${yRatio * 45}px`;
+        }
+      });
+
+      // ② 等所有圖片載入完成、高度完全算好之後，再啟動主副標題的上升淡入動畫
+      window.addEventListener("load", () => {
+        if (titleZh) titleZh.classList.add("start-anim");
+        if (titleEn) titleEn.classList.add("start-anim");
+      });
+
+      // ③ 點擊眼睛按鈕：播放眼睛音效 + 放大轉場並跳轉下一頁
+      const eyeLink = document.getElementById("eye-enter-link");
+      const eyeSfx = document.getElementById("eye-click-sfx");
+      if (eyeSfx) eyeSfx.volume = 0.75; // 眼睛音效音量（75%）
+
+      let isEntering = false;
+
+      if (eyeLink) {
+        eyeLink.addEventListener("click", (e) => {
+          e.preventDefault();
+          if (isEntering) return;
+          isEntering = true;
+
+          // 點擊瞬間立刻播放眼睛音效
+          if (eyeSfx) {
+            eyeSfx.currentTime = 0;
+            eyeSfx.play().catch(() => {});
+          }
+
+          // 同時觸發眼睛放大拉近轉場
+          document.body.classList.add("zoom-enter");
+
+          const targetUrl = eyeLink.getAttribute("href");
+          setTimeout(() => {
+            window.location.href = targetUrl;
+          }, 800);
+        });
+      }
+    </script>
   </body>
 </html>

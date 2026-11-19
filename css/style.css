@@ -9,17 +9,69 @@ body {
   object-fit: cover;
   display: block;
 }
+
+/* 下方英文副標題：ESCAPE FROM VCD（移除 drop-shadow 徹底消除移動黑塊殘影） */
+.title-en {
+  position: absolute;
+  top: 57%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  max-width: 82vw;
+  height: auto;
+  z-index: 12;
+  pointer-events: none;
+  opacity: 0;
+  backface-visibility: hidden; /* 防止瀏覽器移動圖片時產生繪圖殘影 */
+}
+
+/* 上方中文主標題：勇闖視傳系 */
+.title-zh {
+  position: absolute;
+  top: 41%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 900px;
+  max-width: 90vw;
+  height: auto;
+  z-index: 12;
+  pointer-events: none;
+  opacity: 0;
+  backface-visibility: hidden;
+}
+
+/* 純垂直從下往上浮現動畫 */
+@keyframes floatUpStraight {
+  0% {
+    opacity: 0;
+    translate: 0px 28px;
+  }
+  100% {
+    opacity: 1;
+    translate: 0px 0px;
+  }
+}
+
+/* 加上 .start-anim 後才正式開始播放動畫 */
+.title-zh.start-anim {
+  animation: floatUpStraight 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.title-en.start-anim {
+  animation: floatUpStraight 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.25s forwards;
+}
 .button-img {
   position: absolute;
   top: 75%;
   left: 50%;
   transform: translate(-50%, -50%) scale(1);
-  width: 250px;
+  width: 255px;
   height: auto;
   cursor: pointer;
   z-index: 10;
 
-  /* 徹底消除瀏覽器預設框線，且完全不裁切圖片 */
+  /* 關鍵修正：將感應範圍裁切成貼合眼睛的菱形（上、右、下、左四個頂點） */
+  clip-path: ellipse(50% 50% at 50% 50%);
   border: none;
   outline: none;
   background: transparent;
@@ -200,4 +252,34 @@ body {
 
   /* 執行動畫：1.6 秒完成一次斜向來回、平滑加減速、無限循環 */
   animation: mouse-guide-diagonal 1.6s ease-in-out infinite;
+}
+/* =========================================
+   點擊眼睛按鈕：眼睛直接放大 15 倍吞沒畫面轉場（絕不偏位）
+   ========================================= */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+  overflow: hidden;
+  transition: opacity 0.75s ease-in;
+}
+
+/* 整個畫面微微淡出變暗 */
+body.zoom-enter {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 眼睛按鈕本身大幅放大並稍微往下移動，精準對齊視野下方 */
+body.zoom-enter .button-img {
+  z-index: 9999;
+  clip-path: none;
+  top: 55%; /* 原本是 75%，改成 86% 讓放大的中心點再往下移（可微調 82% ~ 92%） */
+  transform: translate(-50%, -45%) scale(10);
+  transition:
+    top 0.8s cubic-bezier(0.32, 0, 0.2, 1),
+    transform 0.8s cubic-bezier(0.32, 0, 0.2, 1);
 }

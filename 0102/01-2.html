@@ -1,14 +1,23 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>勇闖視傳系</title>
     <link rel="stylesheet" href="../css/style01-2.css" />
+    <link rel="icon" type="image/png" href="../img/小裝飾/Iconeye1.png" />
   </head>
   <body>
-    <img src="../img/背景/01-02背景更新版.png" class="background-img" />
-    <a href="../0102/02.html" class="next-page-link">
+    <!-- 背景圖 -->
+    <img src="../img/背景/01-02背景沒字.png" class="background-img" />
+
+    <!-- NEXT 按鈕 -->
+    <a
+      href="../0102/02.html"
+      id="intro-next-btn"
+      class="next-page-link"
+      style="opacity: 0; pointer-events: none; transition: opacity 0.5s ease"
+    >
       <div class="button-box">
         <img class="btn-normal" src="../img/按鈕/按鈕深next.png" alt="按鈕" />
         <img
@@ -18,6 +27,26 @@
         />
       </div>
     </a>
+
+    <!-- 啟動讀取劇情的音效 -->
+    <audio id="start-story-sfx" src="../sound/點.wav" preload="auto"></audio>
+
+    <!-- NEXT 按鈕專屬音效 -->
+    <audio id="next-btn-sfx" src="../sound/按鈕聲.wav" preload="auto"></audio>
+
+    <!-- 打字機文字區（只保留這組正確定位在框內的提示字） -->
+    <div class="yellow-frame-content">
+      <div class="first-line-wrapper">
+        <p id="click-to-start">▶ 點擊畫面開始讀取劇情...</p>
+        <p class="story-line">原本平凡的一天</p>
+      </div>
+
+      <p class="story-line">視傳系的三位老師意外被吸入神祕的遊戲世界</p>
+      <p class="story-line">熟悉的校園變成充滿馬賽克與謎題的異世界</p>
+      <p class="story-line">想回到現實</p>
+      <p class="story-line">唯一的方法就是完成系統發布的五道挑戰！</p>
+      <p class="story-line question-line">你準備好逃出遊戲世界了嗎？</p>
+    </div>
 
     <!-- 六朵左右飄動的雲 -->
     <img class="cloud-1 anim-cloud" src="../img/雲朵/雲左一.png" alt="雲1" />
@@ -46,5 +75,94 @@
       src="../img/雲朵/雲右下.png"
       alt="雲6"
     />
+    <script>
+      const lines = document.querySelectorAll(".story-line");
+      const nextBtn = document.getElementById("intro-next-btn");
+      const startPrompt = document.getElementById("click-to-start");
+      const startStorySfx = document.getElementById("start-story-sfx");
+      const nextBtnSfx = document.getElementById("next-btn-sfx");
+      const allCharSpans = [];
+
+      if (startStorySfx) startStorySfx.volume = 0.7;
+      if (nextBtnSfx) nextBtnSfx.volume = 0.75;
+
+      // 1. 先把所有文字隱藏佔位
+      lines.forEach((line) => {
+        const text = line.textContent;
+        line.textContent = "";
+
+        for (let char of text) {
+          const span = document.createElement("span");
+          span.textContent = char;
+          span.style.opacity = "0";
+          line.appendChild(span);
+          allCharSpans.push(span);
+        }
+      });
+
+      let isStarted = false;
+      let isSkipped = false;
+      let currentChar = 0;
+      let typingInterval = null;
+
+      // 2. 純視覺逐字浮現（無打字音效）
+      function startTyping() {
+        typingInterval = setInterval(() => {
+          if (currentChar < allCharSpans.length) {
+            allCharSpans[currentChar].style.opacity = "1";
+            currentChar++;
+          } else {
+            clearInterval(typingInterval);
+            nextBtn.style.opacity = "1";
+            nextBtn.style.pointerEvents = "auto";
+          }
+        }, 65);
+      }
+
+      // 3. 監聽滑鼠點擊畫面事件
+      document.body.addEventListener("click", () => {
+        if (!isStarted) {
+          isStarted = true;
+
+          // 第一次點擊：播放啟動音效、隱藏提示字、開始跑文字
+          if (startStorySfx) {
+            startStorySfx.currentTime = 0;
+            startStorySfx.play().catch(() => {});
+          }
+          if (startPrompt) startPrompt.style.display = "none";
+
+          startTyping();
+        } else if (!isSkipped) {
+          // 第二次點擊（跑字中途點擊）：直接顯示全部文字與 NEXT 按鈕
+          isSkipped = true;
+          clearInterval(typingInterval);
+          allCharSpans.forEach((span) => (span.style.opacity = "1"));
+          nextBtn.style.opacity = "1";
+          nextBtn.style.pointerEvents = "auto";
+        }
+      });
+
+      // 4. 點擊右下角 NEXT 按鈕：播放專屬 NEXT 音效，停頓 0.35 秒再換頁
+      let isNavigating = false;
+      if (nextBtn) {
+        nextBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          if (isNavigating) return;
+          isNavigating = true;
+
+          if (nextBtnSfx) {
+            nextBtnSfx.currentTime = 0;
+            nextBtnSfx.play().catch(() => {});
+          }
+
+          const targetUrl = nextBtn.getAttribute("href");
+          setTimeout(() => {
+            window.location.href = targetUrl;
+          }, 350);
+        });
+      }
+    </script>
   </body>
 </html>
