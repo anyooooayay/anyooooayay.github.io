@@ -40,9 +40,32 @@
         justify-content: center;
         align-items: center;
       }
+      /* 覆蓋在最上層的復古像素螢幕濾鏡（不影響任何按鈕點擊） */
+      .crt-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none; /* 關鍵：讓滑鼠完全穿透，不擋住任何按鈕！ */
+        z-index: 99999;
+        /* 1. 極細的橫向像素掃描線 */
+        background: linear-gradient(
+          rgba(18, 16, 16, 0) 50%,
+          rgba(0, 0, 0, 0.12) 50%
+        );
+        background-size: 100% 4px;
+        /* 2. 四周微暗角，把視覺焦點集中在螢幕中央 */
+        box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.35);
+      }
     </style>
   </head>
   <body>
+    <!-- 3. 裡面裝載你們原本的所有網頁 -->
+    <iframe id="game-frame" src="0102/01.html"></iframe>
+
+    <!-- 4. 加上這行：復古 CRT 螢幕掃描線＋暗角濾鏡（完全不擋滑鼠點擊） -->
+    <div class="crt-overlay"></div>
     <!-- 1. 全站唯一的背景音樂播放器（永遠不會因為換頁而中斷！） -->
     <audio id="global-bgm" src="sound/背景音樂.mp3" loop preload="auto"></audio>
 
