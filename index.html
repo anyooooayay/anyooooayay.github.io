@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>勇闖視傳系</title>
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="icon" type="image/png" href="../img/小裝飾/Iconeye1.png" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body,
+      html {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: #000;
+      }
+      /* 滿版遊戲畫面視窗 */
+      #game-frame {
+        width: 100vw;
+        height: 100vh;
+        border: none;
+        display: block;
+      }
+      /* 右上角常駐的像素音樂開關按鈕 */
+      #global-bgm-btn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        width: 46px;
+        height: 46px;
+        font-size: 22px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 1. 全站唯一的背景音樂播放器（永遠不會因為換頁而中斷！） -->
+    <audio id="global-bgm" src="sound/背景音樂.mp3" loop preload="auto"></audio>
+
+    <!-- 2. 右上角全站通用音樂開關 -->
+    <button id="global-bgm-btn" title="開關背景音樂">🔊</button>
+
+    <!-- 3. 裡面裝載你們原本的所有網頁（預設從 01.html 開始） -->
+    <iframe id="game-frame" src="0102/01.html"></iframe>
+
+    <script>
+      const bgm = document.getElementById("global-bgm");
+      const bgmBtn = document.getElementById("global-bgm-btn");
+      const gameFrame = document.getElementById("game-frame");
+      bgm.volume = 0.3;
+
+      let isMusicStarted = false;
+
+      // 嘗試一打開網頁就自動播放音樂
+      function tryAutoPlay() {
+        bgm
+          .play()
+          .then(() => {
+            isMusicStarted = true;
+            bgmBtn.textContent = "🔊";
+          })
+          .catch(() => {
+            // 若瀏覽器第一次阻擋自動播放，等玩家點擊畫面任何地方（如首頁眼睛）立刻自動啟動！
+            bgmBtn.textContent = "🔇";
+          });
+      }
+
+      tryAutoPlay();
+
+      // 監聽內部網頁的第一次點擊，只要玩家點了首頁任何地方，音樂立刻永遠啟動
+      gameFrame.addEventListener("load", () => {
+        try {
+          gameFrame.contentWindow.document.body.addEventListener(
+            "click",
+            () => {
+              if (!isMusicStarted) {
+                tryAutoPlay();
+              }
+            },
+            { once: true },
+          );
+        } catch (e) {}
+      });
+
+      // 右上角手動開關按鈕
+      bgmBtn.addEventListener("click", () => {
+        if (bgm.paused) {
+          bgm.play();
+          bgmBtn.textContent = "🔊";
+          isMusicStarted = true;
+        } else {
+          bgm.pause();
+          bgmBtn.textContent = "🔇";
+        }
+      });
+    </script>
+  </body>
+</html>

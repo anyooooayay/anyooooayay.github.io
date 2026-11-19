@@ -27,12 +27,9 @@
         />
       </div>
     </a>
-
-    <!-- 啟動讀取劇情的音效 -->
+    <!-- 只保留這兩行正確的點擊音效 -->
     <audio id="start-story-sfx" src="../sound/點.wav" preload="auto"></audio>
-
-    <!-- NEXT 按鈕專屬音效 -->
-    <audio id="next-btn-sfx" src="../sound/按鈕聲.wav" preload="auto"></audio>
+    <audio id="next-btn-sfx" src="../sound/點.wav" preload="auto"></audio>
 
     <!-- 打字機文字區（只保留這組正確定位在框內的提示字） -->
     <div class="yellow-frame-content">
@@ -105,7 +102,7 @@
       let currentChar = 0;
       let typingInterval = null;
 
-      // 2. 純視覺逐字浮現（無打字音效）
+      // 2. 純視覺逐字浮現
       function startTyping() {
         typingInterval = setInterval(() => {
           if (currentChar < allCharSpans.length) {
@@ -119,12 +116,11 @@
         }, 65);
       }
 
-      // 3. 監聽滑鼠點擊畫面事件
+      // 3. 監聽滑鼠點擊畫面事件（啟動音效與跑字，背景音樂交由外層 index.html 持續播放）
       document.body.addEventListener("click", () => {
         if (!isStarted) {
           isStarted = true;
 
-          // 第一次點擊：播放啟動音效、隱藏提示字、開始跑文字
           if (startStorySfx) {
             startStorySfx.currentTime = 0;
             startStorySfx.play().catch(() => {});
@@ -133,7 +129,6 @@
 
           startTyping();
         } else if (!isSkipped) {
-          // 第二次點擊（跑字中途點擊）：直接顯示全部文字與 NEXT 按鈕
           isSkipped = true;
           clearInterval(typingInterval);
           allCharSpans.forEach((span) => (span.style.opacity = "1"));
@@ -142,7 +137,7 @@
         }
       });
 
-      // 4. 點擊右下角 NEXT 按鈕：播放專屬 NEXT 音效，停頓 0.35 秒再換頁
+      // 4. 點擊 NEXT 按鈕：播放音效並停頓 0.35 秒再換頁
       let isNavigating = false;
       if (nextBtn) {
         nextBtn.addEventListener("click", (e) => {

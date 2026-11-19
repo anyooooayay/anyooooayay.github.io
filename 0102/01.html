@@ -19,12 +19,14 @@
       src="../sound/進入按鈕音.wav"
       preload="auto"
     ></audio>
+
     <!-- 首頁弧形主副標題 -->
     <img
       class="title-en title-fade-en"
       src="../img/小裝飾/首頁英文.png"
       alt="ESCAPE FROM VCD"
     />
+
     <img
       class="title-zh title-fade-zh"
       src="../img/小裝飾/勇闖視傳系.png"
@@ -87,9 +89,9 @@
       alt="雲6"
     />
 
-    <!-- 首頁動態與轉場腳本 -->
+    <!-- 首頁動態與轉場腳本（已移除重複的背景音樂，交由外層 index.html 統一控制） -->
     <script>
-      // ① 只有雲朵、星星與標題跟著滑鼠產生 3D 視差微動（背景完全固定不動）
+      // ① 雲朵、星星與標題 3D 視差微動
       const clouds = document.querySelectorAll(".anim-cloud");
       const stars = document.querySelectorAll(".bling-img, .anim-bling");
       const titleEn = document.querySelector(".title-en");
@@ -119,16 +121,16 @@
         }
       });
 
-      // ② 等所有圖片載入完成、高度完全算好之後，再啟動主副標題的上升淡入動畫
+      // ② 主副標題上升淡入動畫
       window.addEventListener("load", () => {
         if (titleZh) titleZh.classList.add("start-anim");
         if (titleEn) titleEn.classList.add("start-anim");
       });
 
-      // ③ 點擊眼睛按鈕：播放眼睛音效 + 放大轉場並跳轉下一頁
+      // ③ 點擊眼睛按鈕：播放音效 + 放大轉場跳轉（背景音樂交由外層 index.html 持續播放）
       const eyeLink = document.getElementById("eye-enter-link");
       const eyeSfx = document.getElementById("eye-click-sfx");
-      if (eyeSfx) eyeSfx.volume = 0.75; // 眼睛音效音量（75%）
+      if (eyeSfx) eyeSfx.volume = 0.75;
 
       let isEntering = false;
 
@@ -138,13 +140,11 @@
           if (isEntering) return;
           isEntering = true;
 
-          // 點擊瞬間立刻播放眼睛音效
           if (eyeSfx) {
             eyeSfx.currentTime = 0;
             eyeSfx.play().catch(() => {});
           }
 
-          // 同時觸發眼睛放大拉近轉場
           document.body.classList.add("zoom-enter");
 
           const targetUrl = eyeLink.getAttribute("href");
