@@ -176,7 +176,7 @@ body {
 
 /* 最後一句粗體問句 */
 .question-line {
-  margin: 32px 0 0 0; /* 只保留上方 16px 的間隔，其餘歸零 */
+  margin: 25px 0 0 0; /* 只保留上方 16px 的間隔，其餘歸零 */
   color: #f4ea71;
   font-size: 2.1vw;
   line-height: 2;
