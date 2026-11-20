@@ -1,0 +1,568 @@
+/* 引入夜照飛 12 像素字體 */
+@font-face {
+  font-family: "YeZhaoFei12";
+  src: url("../fonts/yezhaofei12.ttf");
+  font-weight: normal;
+}
+@font-face {
+  font-family: "YeZhaoFei12";
+  src: url("../fonts/yezhaofei12B.ttf");
+  font-weight: bold;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+  font-family: "YeZhaoFei12", "Microsoft JhengHei", sans-serif;
+  -webkit-font-smoothing: none;
+}
+
+/* 16:9 遊戲主舞台 */
+.game-container {
+  position: relative;
+  width: 100vw;
+  max-width: 177.78vh;
+  height: 56.25vw;
+  max-height: 100vh;
+  background-image: url("../img/背景/題目背景倒方.png");
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 2.2% 8% 3%;
+}
+
+/* 頂部標題欄 */
+.stage-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  background: rgba(11, 75, 226, 0.85);
+  border: 4px solid #ffd23f;
+  padding: 10px 24px;
+  color: #ffd23f;
+  font-size: clamp(18px, 2vw, 26px);
+  font-weight: bold;
+  letter-spacing: 4px;
+  box-shadow: 0 6px 0 #3b1e10;
+}
+
+/* 左右雙欄主區域 */
+.font-arena {
+  width: 100%;
+  height: 68%;
+  display: flex;
+  gap: 32px;
+  align-items: stretch;
+}
+
+.left-cards-panel,
+.right-targets-panel {
+  flex: 1;
+  background: #fffdf5;
+  border: 6px solid #5a2d18;
+  box-shadow:
+    inset 0 0 0 2px #d49b27,
+    0 10px 0 rgba(0, 0, 0, 0.6);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-tag {
+  background: #d6362e;
+  color: #fff;
+  padding: 8px 26px;
+  font-size: clamp(18px, 1.8vw, 24px);
+  font-weight: bold;
+  border: 4px solid #5a2d18;
+  letter-spacing: 4px;
+}
+
+/* 紅藍框下方的提示字（已拉開與上方框的距離） */
+.sub-instruction {
+  font-size: clamp(14px, 1.3vw, 18px);
+  color: #7a5c43;
+  letter-spacing: 2px;
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+
+.draggable-list {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+/* 「我已經學會設計」範例卡片 */
+.font-sample-card {
+  width: 90%;
+  padding: 14px 20px;
+  background: #ffffff;
+  border: 4px solid #3b1e10;
+  box-shadow: 4px 4px 0 #d49b27;
+  font-size: clamp(26px, 2.8vw, 38px);
+  color: #111111;
+  text-align: center;
+  cursor: grab;
+  user-select: none;
+  transition:
+    transform 0.12s ease,
+    border-color 0.12s ease;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-sample-card:hover {
+  transform: scale(1.03);
+  border-color: #d6362e;
+}
+
+.font-sample-card.selected-card {
+  border-color: #2b579a;
+  background: #eef5ff;
+  transform: scale(1.04);
+}
+
+/* 第 1 題（基礎篇）三種經典字型 */
+.font-jhenghei {
+  font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
+  font-weight: 700;
+}
+
+.font-mingliu {
+  font-family: "PMingLiU", "MingLiU", "Noto Serif TC", "Songti TC", serif;
+  font-weight: 700;
+}
+
+.font-kai {
+  font-family: "DFKai-SB", "BiauKai", "Kaiti TC", cursive, serif;
+  font-weight: 700;
+}
+
+/* 第 2 題（進階篇）三種設計字型 */
+.font-noto-sans {
+  font-family: "Noto Sans TC", sans-serif;
+  font-weight: 700;
+}
+
+.font-zen-maru {
+  font-family: "Zen Maru Gothic", sans-serif;
+  font-weight: 700;
+}
+
+.font-wenkai {
+  font-family: "LXGW WenKai TC", serif;
+  font-weight: 700;
+}
+
+/* 右側放置槽 */
+.drop-zone-list {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.font-drop-slot {
+  width: 100%;
+  min-height: 76px;
+  background: #fdf6e3;
+  border: 4px dashed #8a5319;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.font-drop-slot.drag-over {
+  background: #fff0b3;
+  border-color: #d6362e;
+}
+
+.slot-label {
+  font-size: clamp(18px, 1.8vw, 24px);
+  font-weight: bold;
+  color: #3b1e10;
+  letter-spacing: 3px;
+  white-space: nowrap;
+}
+
+.slot-holder {
+  flex: 1;
+  height: 54px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 2px solid #d49b27;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #a38b71;
+  font-size: 16px;
+}
+
+.slot-holder .font-sample-card {
+  width: 100%;
+  height: 100%;
+  padding: 4px 10px;
+  box-shadow: none;
+  border: 3px solid #2b579a;
+  font-size: clamp(18px, 2vw, 26px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 底部咖啡與綠色按鈕（已往下移） */
+.bottom-actions {
+  margin-top: 36px;
+  display: flex;
+  gap: 24px;
+}
+
+.action-pixel-btn {
+  background: #2e9e5b;
+  color: #fff;
+  border: 4px solid #1b5e36;
+  box-shadow: 0 6px 0 #124024;
+  padding: 12px 36px;
+  font-family: "YeZhaoFei12", sans-serif;
+  font-size: clamp(18px, 1.9vw, 24px);
+  font-weight: bold;
+  letter-spacing: 3px;
+  cursor: pointer;
+}
+
+.action-pixel-btn:hover {
+  background: #36b569;
+  transform: translateY(-2px);
+}
+
+.btn-reset-cards {
+  background: #7a5c43;
+  border-color: #3b1e10;
+  box-shadow: 0 6px 0 #261209;
+}
+
+.btn-reset-cards:hover {
+  background: #8f6d50;
+}
+
+/* 開場說明彈窗（單排文字不換行） */
+.intro-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.intro-pixel-box {
+  width: min(92vw, 860px);
+  background: #fffdf5;
+  border: 6px solid #5a2d18;
+  box-shadow:
+    inset 0 0 0 3px #d49b27,
+    0 16px 40px rgba(0, 0, 0, 0.9);
+  padding: 32px 40px;
+  text-align: center;
+}
+
+.intro-badge {
+  display: inline-block;
+  background: #0b4be2;
+  color: #ffd23f;
+  border: 3px solid #ffd23f;
+  padding: 6px 20px;
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 3px;
+  margin-bottom: 14px;
+}
+
+.intro-title {
+  font-size: clamp(24px, 2.6vw, 34px);
+  color: #d6362e;
+  letter-spacing: 4px;
+  margin-bottom: 20px;
+}
+
+.intro-rules {
+  background: #fdf6e3;
+  border: 3px solid #d49b27;
+  padding: 18px 24px;
+  text-align: left;
+  color: #3b1e10;
+  line-height: 2;
+  letter-spacing: 2px;
+  margin-bottom: 24px;
+}
+
+.intro-rules p {
+  white-space: nowrap;
+  font-size: clamp(14px, 1.35vw, 19px);
+}
+
+.intro-start-btn {
+  background: #2e9e5b;
+  color: #ffffff;
+  border: 4px solid #1b5e36;
+  box-shadow: 0 6px 0 #124024;
+  padding: 14px 44px;
+  font-family: "YeZhaoFei12", sans-serif;
+  font-size: 22px;
+  font-weight: bold;
+  letter-spacing: 3px;
+  cursor: pointer;
+}
+
+/* 最終大結算樣式（獎狀與失敗畫面） */
+.overlay,
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.calc-box {
+  text-align: center;
+  color: #ffd23f;
+}
+.calc-spinner {
+  width: 64px;
+  height: 64px;
+  margin: 5px auto 30px;
+  border: 8px solid rgba(255, 210, 63, 0.25);
+  border-top-color: #ffd23f;
+  border-radius: 50%;
+  animation: spinCalc 0.9s linear infinite;
+}
+@keyframes spinCalc {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.calc-text {
+  font-size: 32px;
+  line-height: 1.6;
+  letter-spacing: 3px;
+  margin-bottom: 24px;
+}
+.calc-subtext {
+  font-size: 18px;
+  color: #ffffff;
+  opacity: 0.85;
+  letter-spacing: 2px;
+}
+
+.cert-container {
+  position: relative;
+  width: min(92vw, 1100px);
+  aspect-ratio: 16 / 9;
+  user-select: none;
+}
+.cert-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.cert-text,
+.fail-score-pos,
+.fail-total-pos {
+  position: absolute;
+  font-family: "YeZhaoFei12", sans-serif !important;
+  font-weight: bold !important;
+  -webkit-font-smoothing: none;
+  pointer-events: none;
+}
+.score-pos {
+  top: 29.5%;
+  left: 27.5%;
+  font-size: clamp(16px, 4vw, 26px);
+  color: #ffffff;
+  text-shadow: 1px 1px 0 #7a1010;
+  letter-spacing: 6px;
+}
+.name-pos {
+  top: 51.6%;
+  left: 30%;
+  font-size: clamp(16px, 2vw, 24px);
+  color: #a01515;
+  letter-spacing: 3px;
+}
+.cert-char {
+  position: absolute;
+  top: 43%;
+  left: 52.5%;
+  width: 9.5%;
+  height: auto;
+  image-rendering: pixelated;
+}
+.camera-box {
+  position: absolute;
+  top: 36%;
+  left: 67%;
+  width: 17%;
+  height: 37%;
+  background: #cccccc;
+  overflow: hidden;
+  z-index: 2;
+}
+.camera-box video,
+.camera-box canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+.cert-crown {
+  position: absolute;
+  top: 33%;
+  left: 81%;
+  width: 5%;
+  z-index: 5;
+  pointer-events: none;
+}
+.img-btn {
+  position: absolute;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  z-index: 6;
+}
+.img-btn img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.snap-pos {
+  top: 66%;
+  left: 85%;
+  width: 3.6%;
+}
+.share-pos {
+  top: 102%;
+  left: 30%;
+  width: 17%;
+}
+.restart-pos {
+  top: 102%;
+  left: 50%;
+  width: 16%;
+}
+
+.blue-fail-fullscreen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #0d1b3e;
+  z-index: 1000;
+}
+.blue-bg-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.white-fail-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+}
+.fail-dialog-window {
+  position: relative;
+  width: min(88vw, 720px);
+  aspect-ratio: 1024 / 722;
+}
+.dialog-window-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: pixelated;
+}
+.fail-score-pos {
+  position: absolute;
+  top: 31.3%;
+  left: 54.5%;
+  font-size: clamp(18px, 2.2vw, 26px);
+  color: #d92626;
+}
+.fail-total-pos {
+  position: absolute;
+  top: 31.3%;
+  left: 59%;
+  font-size: clamp(18px, 2.2vw, 26px);
+  color: #d92626;
+}
+.fail-btn-group {
+  position: absolute;
+  top: 63%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 66%;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  z-index: 10;
+}
+.fail-img-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  width: 46%;
+  cursor: pointer;
+}
+.fail-img-btn img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.temp-home-placeholder {
+  width: 100%;
+  aspect-ratio: 3.3 / 1;
+  background: #3b4b75;
+  color: #fff;
+  border: 3px solid #1e2742;
+  border-radius: 12px;
+  font-family: "YeZhaoFei12", sans-serif;
+  font-size: 18px;
+  font-weight: bold;
+  justify-content: center;
+  align-items: center;
+}

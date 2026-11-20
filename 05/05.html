@@ -4,8 +4,409 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>勇闖視傳系</title>
-    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/style05.css" />
     <link rel="icon" type="image/png" href="../img/小裝飾/Iconeye1.png" />
+    <!-- 加入進階字體 Google Fonts -->
+    <link rel="stylesheet" href="https://googleapis.com" />
   </head>
-  <body></body>
+  <body>
+    <audio id="sfx-click" src="../sound/按鈕聲.wav" preload="auto"></audio>
+
+    <!-- 第三關：關卡說明彈窗 -->
+    <div id="font-intro-modal" class="intro-modal-overlay">
+      <div class="intro-pixel-box">
+        <div class="intro-badge">STAGE 03 // 最終關卡說明</div>
+        <h2 class="intro-title">字體火眼金睛配對</h2>
+        <div class="intro-rules">
+          <p>1. 觀察左側三張「我已經學會設計」的字體筆畫特徵。</p>
+          <p>2. 將卡片拖曳（或點擊選取後再點右側欄位）放入正確的字體名稱框。</p>
+          <p>3. 全部配對完成後按下「完成挑戰」，即可結算三大關總成績！</p>
+        </div>
+        <button class="intro-start-btn" onclick="startFontStage()">
+          開始挑戰 READY
+        </button>
+      </div>
+    </div>
+
+    <!-- 第三關：字體配對主舞台 -->
+    <div class="game-container" id="font-game-stage">
+      <div class="stage-header">
+        <span>STAGE 03 // 字體辨識配對</span>
+        <span id="font-q-progress">第 1 / 2 題（基礎篇）</span>
+        <span id="prev-score-tag">前兩關累計：0 分</span>
+      </div>
+
+      <div class="font-arena">
+        <!-- 左側：三張不同字型的範例卡片 -->
+        <div class="left-cards-panel">
+          <div class="panel-tag">字體範例卡</div>
+          <div class="sub-instruction">拖曳（或點擊）卡片到右側對應名稱</div>
+          <div class="draggable-list" id="source-card-list">
+            <div
+              class="font-sample-card font-jhenghei"
+              draggable="true"
+              data-font="jhenghei"
+            >
+              我已經學會設計
+            </div>
+            <div
+              class="font-sample-card font-mingliu"
+              draggable="true"
+              data-font="mingliu"
+            >
+              我已經學會設計
+            </div>
+            <div
+              class="font-sample-card font-kai"
+              draggable="true"
+              data-font="kai"
+            >
+              我已經學會設計
+            </div>
+          </div>
+        </div>
+
+        <!-- 右側：三個字體名稱放置槽 -->
+        <div class="right-targets-panel">
+          <div class="panel-tag" style="background: #2b579a">字體名稱框</div>
+          <div class="sub-instruction">請將三張卡片全部放入正確欄位</div>
+          <div class="drop-zone-list">
+            <div class="font-drop-slot" data-target="jhenghei">
+              <span class="slot-label">微軟正黑體</span>
+              <div class="slot-holder" data-placeholder="拖曳至此處">
+                拖曳至此處
+              </div>
+            </div>
+            <div class="font-drop-slot" data-target="mingliu">
+              <span class="slot-label">新細明體</span>
+              <div class="slot-holder" data-placeholder="拖曳至此處">
+                拖曳至此處
+              </div>
+            </div>
+            <div class="font-drop-slot" data-target="kai">
+              <span class="slot-label">標楷體</span>
+              <div class="slot-holder" data-placeholder="拖曳至此處">
+                拖曳至此處
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-actions">
+        <button
+          class="action-pixel-btn btn-reset-cards"
+          onclick="resetFontCards()"
+        >
+          全部重放
+        </button>
+        <button
+          id="font-submit-btn"
+          class="action-pixel-btn"
+          onclick="submitFontMatching()"
+        >
+          確認送出・進入第 2 題
+        </button>
+      </div>
+    </div>
+    <!-- 👈 就是少了這個 game-container 的結尾標籤！ -->
+    <script>
+      const sfxClick = document.getElementById("sfx-click");
+      const sourceList = document.getElementById("source-card-list");
+      const cards = document.querySelectorAll(".font-sample-card");
+      const dropSlots = document.querySelectorAll(".font-drop-slot");
+
+      const s1 = Number(localStorage.getItem("stage1Score")) || 0;
+      const s2 = Number(localStorage.getItem("stage2Score")) || 0;
+      document.getElementById("prev-score-tag").textContent =
+        `前兩關累計：${s1 + s2} 分`;
+
+      function startFontStage() {
+        if (sfxClick) {
+          sfxClick.currentTime = 0;
+          sfxClick.play().catch(() => {});
+        }
+        document.getElementById("font-intro-modal").style.display = "none";
+      }
+
+      // 第 1 題：原本的經典字體；第 2 題：新加的進階字體
+      const fontRounds = [
+        {
+          progressLabel: "第 1 / 2 題（基礎篇）",
+          btnLabel: "確認送出・進入第 2 題",
+          items: [
+            { id: "jhenghei", label: "微軟正黑體", className: "font-jhenghei" },
+            { id: "mingliu", label: "新細明體", className: "font-mingliu" },
+            { id: "kai", label: "標楷體", className: "font-kai" },
+          ],
+        },
+        {
+          progressLabel: "第 2 / 2 題（進階篇）",
+          btnLabel: "完成挑戰・進入結算",
+          items: [
+            { id: "noto-sans", label: "思源黑體", className: "font-noto-sans" },
+            { id: "zen-maru", label: "源泉圓體", className: "font-zen-maru" },
+            { id: "wenkai", label: "霞鶩文楷", className: "font-wenkai" },
+          ],
+        },
+      ];
+
+      let currentFontRound = 0;
+      let totalStage3Score = 0;
+      let draggedCard = null;
+      let selectedCardForTap = null;
+
+      function loadFontRound(roundIndex) {
+        const roundData = fontRounds[roundIndex];
+        const progressEl = document.getElementById("font-q-progress");
+        const submitBtnEl = document.getElementById("font-submit-btn");
+        if (progressEl) progressEl.textContent = roundData.progressLabel;
+        if (submitBtnEl) submitBtnEl.textContent = roundData.btnLabel;
+
+        cards.forEach((c) => {
+          c.classList.remove("selected-card");
+          sourceList.appendChild(c);
+        });
+        dropSlots.forEach((slot) => {
+          const holder = slot.querySelector(".slot-holder");
+          holder.textContent = holder.dataset.placeholder;
+        });
+        selectedCardForTap = null;
+
+        roundData.items.forEach((item, idx) => {
+          const card = cards[idx];
+          card.className = `font-sample-card ${item.className}`;
+          card.dataset.font = item.id;
+          card.textContent = "我已經學會設計";
+
+          const slot = dropSlots[idx];
+          slot.dataset.target = item.id;
+          slot.querySelector(".slot-label").textContent = item.label;
+        });
+
+        const cardArr = Array.from(cards);
+        cardArr.sort(() => Math.random() - 0.5);
+        cardArr.forEach((c) => sourceList.appendChild(c));
+      }
+
+      cards.forEach((card) => {
+        card.addEventListener("dragstart", () => {
+          draggedCard = card;
+        });
+        card.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (sfxClick) {
+            sfxClick.currentTime = 0;
+            sfxClick.play().catch(() => {});
+          }
+          cards.forEach((c) => c.classList.remove("selected-card"));
+          selectedCardForTap = card;
+          card.classList.add("selected-card");
+        });
+      });
+
+      function placeCardIntoSlot(slot, cardToPlace) {
+        if (!cardToPlace) return;
+        const holder = slot.querySelector(".slot-holder");
+        const existingCard = holder.querySelector(".font-sample-card");
+        if (existingCard && existingCard !== cardToPlace) {
+          sourceList.appendChild(existingCard);
+        }
+        const oldParent = cardToPlace.parentElement;
+        if (oldParent && oldParent.classList.contains("slot-holder")) {
+          oldParent.textContent = oldParent.dataset.placeholder;
+        }
+        holder.textContent = "";
+        holder.appendChild(cardToPlace);
+        cardToPlace.classList.remove("selected-card");
+        selectedCardForTap = null;
+        if (sfxClick) {
+          sfxClick.currentTime = 0;
+          sfxClick.play().catch(() => {});
+        }
+      }
+
+      dropSlots.forEach((slot) => {
+        slot.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          slot.classList.add("drag-over");
+        });
+        slot.addEventListener("dragleave", () => {
+          slot.classList.remove("drag-over");
+        });
+        slot.addEventListener("drop", (e) => {
+          e.preventDefault();
+          slot.classList.remove("drag-over");
+          placeCardIntoSlot(slot, draggedCard);
+          draggedCard = null;
+        });
+        slot.addEventListener("click", () => {
+          if (selectedCardForTap) placeCardIntoSlot(slot, selectedCardForTap);
+        });
+      });
+
+      function resetFontCards() {
+        if (sfxClick) {
+          sfxClick.currentTime = 0;
+          sfxClick.play().catch(() => {});
+        }
+        cards.forEach((c) => {
+          c.classList.remove("selected-card");
+          sourceList.appendChild(c);
+        });
+        dropSlots.forEach((slot) => {
+          const holder = slot.querySelector(".slot-holder");
+          holder.textContent = holder.dataset.placeholder;
+        });
+        selectedCardForTap = null;
+      }
+
+      function submitFontMatching() {
+        let placedCount = 0;
+        let roundScore = 0;
+
+        dropSlots.forEach((slot) => {
+          const placedCard = slot.querySelector(".font-sample-card");
+          if (placedCard) {
+            placedCount++;
+            if (placedCard.dataset.font === slot.dataset.target) {
+              roundScore++;
+            }
+          }
+        });
+
+        if (placedCount < 3) {
+          alert("請先將左側三張字體卡片都放入右側對應名稱中喔！");
+          return;
+        }
+
+        if (sfxClick) {
+          sfxClick.currentTime = 0;
+          sfxClick.play().catch(() => {});
+        }
+
+        totalStage3Score += roundScore;
+
+        // 第 1 題完成 -> 自動切換到第 2 題（新加的進階字體）
+        if (currentFontRound === 0) {
+          currentFontRound = 1;
+          loadFontRound(1);
+          return;
+        }
+
+        // 第 2 題完成 -> 進入三大關總結算（滿分 5 + 3 + 6 = 14 分）
+        const totalQuestions = 14;
+        const totalScore = s1 + s2 + totalStage3Score;
+        const passThreshold = 8;
+
+        document.getElementById("font-game-stage").style.display = "none";
+        const calcModal = document.getElementById("calc-modal");
+        calcModal.style.display = "flex";
+
+        const resultCharacterMap = {
+          "角色 1": "../img/角色/角色1金牌.png",
+          "角色 2": "../img/角色/角色2金牌.png",
+          "角色 3": "../img/角色/角色3金牌.png",
+          角色1: "../img/角色/角色1金牌.png",
+          角色2: "../img/角色/角色2金牌.png",
+          角色3: "../img/角色/角色3金牌.png",
+        };
+
+        setTimeout(() => {
+          calcModal.style.display = "none";
+          const savedName = localStorage.getItem("playerName") || "視傳系勇者";
+          const savedChar =
+            localStorage.getItem("selectedCharacter") || "角色 1";
+
+          if (totalScore >= passThreshold) {
+            document.getElementById("cert-player-name").textContent = savedName;
+            document.getElementById("cert-score-display").textContent =
+              `${totalScore}/${totalQuestions}`;
+            const certCharImg = document.getElementById("cert-char-img");
+            if (resultCharacterMap[savedChar]) {
+              certCharImg.src = resultCharacterMap[savedChar];
+            }
+            document.getElementById("success-modal").style.display = "flex";
+            startWebcam();
+          } else {
+            document.getElementById("fail-score-num").textContent = totalScore;
+            document.getElementById("fail-total-num").textContent =
+              totalQuestions;
+            const failIntro = document.getElementById("fail-intro-modal");
+            const failModal = document.getElementById("fail-modal");
+            failIntro.style.display = "block";
+            setTimeout(() => {
+              failIntro.style.display = "none";
+              failModal.style.display = "flex";
+            }, 1800);
+          }
+        }, 2200);
+      }
+
+      let webcamStream = null;
+      function startWebcam() {
+        const video = document.getElementById("player-webcam");
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          navigator.mediaDevices
+            .getUserMedia({ video: { facingMode: "user" }, audio: false })
+            .then((stream) => {
+              webcamStream = stream;
+              video.srcObject = stream;
+            })
+            .catch(() => {});
+        }
+      }
+
+      function takeSnapshot() {
+        const video = document.getElementById("player-webcam");
+        const canvas = document.getElementById("photo-canvas");
+        canvas.width = video.videoWidth || 400;
+        canvas.height = video.videoHeight || 400;
+        canvas
+          .getContext("2d")
+          .drawImage(video, 0, 0, canvas.width, canvas.height);
+        video.style.display = "none";
+        canvas.style.display = "block";
+        document.getElementById("snap-btn").style.display = "none";
+        document.getElementById("retake-btn").style.display = "inline-block";
+      }
+
+      function retakePhoto() {
+        document.getElementById("photo-canvas").style.display = "none";
+        document.getElementById("player-webcam").style.display = "block";
+        document.getElementById("retake-btn").style.display = "none";
+        document.getElementById("snap-btn").style.display = "inline-block";
+      }
+
+      function shareResult() {
+        const savedName = localStorage.getItem("playerName") || "視傳系勇者";
+        const text = `【勇闖視傳系 ESCAPE FROM VCD】挑戰者「${savedName}」成功通過三大關卡考驗，順利逃出異世界！`;
+        navigator.clipboard
+          ?.writeText(`${text}\n${window.location.origin}`)
+          .then(() => {
+            alert("已複製通關戰績與網址！");
+          });
+      }
+
+      function restartFromStage1() {
+        localStorage.removeItem("stage1Score");
+        localStorage.removeItem("stage2Score");
+        window.location.href = "../03/03.html";
+      }
+
+      function restartWholeGame() {
+        try {
+          if (webcamStream) webcamStream.getTracks().forEach((t) => t.stop());
+          const btn = window.parent.document.getElementById("global-bgm-btn");
+          if (btn) btn.style.display = "flex";
+        } catch (e) {}
+        localStorage.removeItem("stage1Score");
+        localStorage.removeItem("stage2Score");
+        window.location.href = "../0102/01.html";
+      }
+
+      // 初始化載入第 1 題
+      loadFontRound(0);
+    </script>
+  </body>
 </html>
