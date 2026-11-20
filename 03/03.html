@@ -339,7 +339,7 @@
         "../img/題目/start.png",
       ];
       const correctImgSrc = "../img/題目/答對.png"; // ← 請確認你們的「答對圖」檔名
-      const wrongImgSrc = "../img/題目/失敗.png"; // ← 請確認你們的「答錯圖」檔名
+      const wrongImgSrc = "../img/題目/答錯.png"; // ← 請確認你們的「答錯圖」檔名
 
       let currentIndex = 0;
       let score = 0;
@@ -705,31 +705,12 @@
             })
             .catch(() => {});
         } else {
-          const failIntro = document.getElementById("fail-intro-modal");
-          const introBadge = document.getElementById("fail-intro-score-badge");
-          const introScoreVal = document.getElementById("intro-score-val");
-          const failModal = document.getElementById("fail-modal");
-          const failScoreNum = document.getElementById("fail-score-num");
-
-          // 填入分數
-          if (introScoreVal) introScoreVal.textContent = score;
-          if (failScoreNum) failScoreNum.textContent = score;
-
-          // 階段 1（0 秒）：先顯示滿版藍色「FAIL 提示畫面」
-          if (failModal) failModal.style.display = "none";
-          if (introBadge) introBadge.style.display = "none";
-          if (failIntro) failIntro.style.display = "block";
-
-          // 階段 2（1.0 秒後）：在藍色 FAIL 下方跳出「顯示對幾題」
-          setTimeout(() => {
-            if (introBadge) introBadge.style.display = "block";
-          }, 1000);
-
-          // 階段 3（2.8 秒後）：關閉藍色 FAIL，跳到原比例置中的「挑戰失敗頁面」
-          setTimeout(() => {
-            if (failIntro) failIntro.style.display = "none";
-            if (failModal) failModal.style.display = "flex";
-          }, 2800);
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+            alert("逃脫結果已複製！");
+          } else {
+            alert(shareText);
+          }
         }
       }
 
