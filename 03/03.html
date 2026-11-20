@@ -610,6 +610,8 @@
           loadStage();
         } else {
           showFinalResult();
+          localStorage.setItem("stage1Score", score); // 存下選擇題分數
+          window.location.href = "../04/04.html"; // 跳轉到第二關：顏色題
         }
       }
 
@@ -626,69 +628,36 @@
         3: "../img/角色/角色3金牌.png",
       };
 
-      // 10. 答題結束：先播放「結算中動畫」2.2 秒，再依分數跳轉成功或失敗畫面
+      // 10. 第一關選擇題結束：儲存分數並跳轉到第二關（../04/04.html）
       function showFinalResult() {
         if (quizBgm) {
           quizBgm.pause();
           quizBgm.currentTime = 0;
         }
 
+        // 儲存第一關得分
+        localStorage.setItem("stage1Score", score);
+
+        // 顯示過場提示畫面
         const calcModal = document.getElementById("calc-modal");
         if (calcModal) {
+          const calcText = calcModal.querySelector(".calc-text");
+          const calcSubtext = calcModal.querySelector(".calc-subtext");
+          if (calcText) calcText.textContent = "第一關空間謎題完成！";
+          if (calcSubtext)
+            calcSubtext.textContent = "正在前往第二關：色彩敏感度測試...";
           calcModal.style.display = "flex";
         }
 
+        // 1.8 秒後跳轉到第二關
         setTimeout(() => {
-          if (calcModal) {
-            calcModal.style.display = "none";
-          }
-
-          // 徹底隱藏底層題目畫面，避免透明處透出重疊
-          const gameContainer = document.querySelector(".game-container");
-          if (gameContainer) gameContainer.style.display = "none";
-
-          const savedName = localStorage.getItem("playerName") || "視傳系勇者";
-          const savedChar =
-            localStorage.getItem("selectedCharacter") || "角色 1";
-
-          if (score >= 3) {
-            // --- 通關成功 ---
-            const nameEl = document.getElementById("cert-player-name");
-            if (nameEl) nameEl.textContent = savedName;
-
-            const scoreEl = document.getElementById("cert-score-display");
-            if (scoreEl) scoreEl.textContent = `${score}/5`;
-
-            const certCharImg = document.getElementById("cert-char-img");
-            if (certCharImg && resultCharacterMap[savedChar]) {
-              certCharImg.src = resultCharacterMap[savedChar];
-            }
-
-            const successModal = document.getElementById("success-modal");
-            if (successModal) successModal.style.display = "flex";
-
-            if (typeof startWebcam === "function") startWebcam();
-          } else {
-            // --- 通關失敗 ---
-            const failIntro = document.getElementById("fail-intro-modal");
-            const failModal = document.getElementById("fail-modal");
-            const failScoreNum = document.getElementById("fail-score-num");
-
-            if (failScoreNum) failScoreNum.textContent = score;
-
-            // 先強制確保兩個失敗頁不會同時顯示
-            if (failModal) failModal.style.display = "none";
-
-            if (failIntro && failModal) {
-              failIntro.style.display = "block";
-              setTimeout(() => {
-                failIntro.style.display = "none";
-                failModal.style.display = "flex";
-              }, 1800);
-            }
-          }
-        }, 2200);
+          window.location.href = "../04/04.html";
+        }, 1800);
       }
+
+      // 啟動預載與第一關
+      preloadAllImages();
+      loadStage();
 
       // 11. 分享脫逃結果功能
       function shareResult() {
@@ -734,7 +703,7 @@
           if (parentBgmBtn) parentBgmBtn.style.display = "flex";
         } catch (e) {}
 
-        window.location.href = "../0102/01.html";
+        window.location.href = "../04/04.html";
       }
       let webcamStream = null;
 
