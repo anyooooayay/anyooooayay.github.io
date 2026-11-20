@@ -69,88 +69,103 @@
       </div>
     </div>
 
-    <!-- ③-2 挑戰成功獎狀彈窗（含即時拍照功能與分享按鈕，已清理多餘標籤） -->
-    <div id="success-modal" class="overlay" style="display: none">
-      <div class="pixel-dialog-box certificate-box">
-        <div class="dialog-title" style="background-color: #2e9e5b">
-          🎉 挑戰成功！逃出異世界！
+    <div id="success-modal" class="modal-overlay" style="display: none">
+      <!-- 獎狀主容器（依你的設計圖比例設定） -->
+      <div class="cert-container">
+        <!-- 1. 獎狀底圖（包含背景、PASSED印章、拍下你的真實樣貌框等） -->
+        <img
+          src="../img/結算/獎狀底圖.png"
+          class="cert-bg"
+          alt="異世界逃脫證明書"
+        />
+
+        <!-- 2. 通關成績（對齊紅色橫幅中間的空白處） -->
+        <div id="cert-score-display" class="cert-text score-pos">5</div>
+
+        <!-- 3. 挑戰者名字（對齊「茲證明挑戰者 ____」的底線上方） -->
+        <div id="cert-player-name" class="cert-text name-pos">視傳系勇者</div>
+
+        <img
+          id="cert-char-img"
+          src="../img/角色/角色1金牌.png"
+          class="cert-char"
+          alt="通關角色"
+        />
+        <!-- 5. 右側相機拍照區（對齊灰色方框） -->
+        <div class="camera-box">
+          <video id="player-webcam" autoplay playsinline></video>
+          <canvas id="photo-canvas" style="display: none"></canvas>
         </div>
 
-        <!-- 獎狀資訊區 -->
-        <div class="cert-info">
-          <p>挑戰者：<span id="cert-player-name">視傳系勇者</span></p>
-          <p id="cert-score-display">通關成績：5 / 5 題</p>
-          <p>日期：<span id="cert-date">2026.11.20</span></p>
-        </div>
+        <!-- 6. 皇冠貼圖（疊在相機框右上角，z-index 設高一點才不會被相機蓋住） -->
+        <img src="../img/結算/皇冠.png" class="cert-crown" alt="皇冠" />
 
-        <!-- 雙欄對照區：左邊是老師姿勢，右邊是玩家即時相機 -->
-        <div class="photo-compare-area">
-          <div class="char-ref-box">
-            <img
-              id="cert-char-img"
-              src="../img/角色/角色1.png"
-              alt="模仿角色"
-            />
-            <span class="box-label">▲ 模仿老師的姿勢！</span>
-          </div>
+        <!-- 7. 紅色小相機快門按鈕（疊在相機框右下角） -->
+        <button id="snap-btn" class="img-btn snap-pos" onclick="takeSnapshot()">
+          <img src="../img/結算/拍照按鈕.png" alt="拍照" />
+        </button>
+        <!-- 重拍按鈕（拍完照後切換顯示） -->
+        <button
+          id="retake-btn"
+          class="img-btn snap-pos"
+          onclick="retakePhoto()"
+          style="display: none"
+        >
+          <img src="../img/結算/拍照按鈕.png" alt="重拍" />
+        </button>
 
-          <div class="camera-box">
-            <video id="player-webcam" autoplay playsinline></video>
-            <canvas id="photo-canvas" style="display: none"></canvas>
-            <span class="box-label">▲ 你的通關紀念照</span>
-          </div>
-        </div>
+        <!-- 8. 右下角「分享逃脫結果」圖片按鈕 -->
+        <button class="img-btn share-pos" onclick="shareResult()">
+          <img src="../img/結算/分享按鈕.png" alt="分享逃脫結果" />
+        </button>
 
-        <!-- 拍照、重拍、分享與回首頁按鈕 -->
-        <div class="camera-controls">
-          <button
-            id="snap-btn"
-            class="pixel-action-btn"
-            onclick="takeSnapshot()"
-          >
-            📸 拍下通關照
-          </button>
-          <button
-            id="retake-btn"
-            class="pixel-action-btn"
-            style="display: none; background-color: #555"
-            onclick="retakePhoto()"
-          >
-            🔄 重拍一張
-          </button>
-          <button
-            class="pixel-action-btn"
-            style="background-color: #2980b9"
-            onclick="shareResult()"
-          >
-            📤 分享戰績
-          </button>
-          <button
-            class="pixel-action-btn"
-            style="background-color: #e69d00"
-            onclick="restartWholeGame()"
-          >
-            🏠 回到首頁
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ③-3 挑戰失敗畫面 -->
-    <div id="fail-modal" class="overlay fail-bg" style="display: none">
-      <div class="pixel-dialog-box fail-box">
-        <div class="dialog-title">挑戰失敗...</div>
-        <h3 id="fail-score-text" class="dialog-subtitle">最終得分：0 / 5 分</h3>
-        <p class="dialog-text">
-          訊號干擾過強！<br />
-          你與老師暫時被困在視傳系異世界，差一點點就能逃出去了！
-        </p>
-        <button class="pixel-action-btn btn-retry" onclick="restartWholeGame()">
-          🔄 再玩一次
+        <!-- 9. 右下角「再玩一次」圖片按鈕 -->
+        <button class="img-btn restart-pos" onclick="restartWholeGame()">
+          <img src="../img/結算/再玩一次按鈕.png" alt="再玩一次" />
         </button>
       </div>
     </div>
 
+    <!-- 3-3 挑戰失敗畫面（唯一一組，絕無重複） -->
+
+    <!-- 第一階段：全螢幕滿版「失敗畫面.png」（藍色 FAIL 畫面） -->
+    <div
+      id="fail-intro-modal"
+      class="blue-fail-fullscreen"
+      style="display: none"
+    >
+      <img
+        src="../img/結算/失敗畫面.png"
+        class="blue-bg-cover"
+        alt="失敗畫面"
+      />
+    </div>
+
+    <!-- 第二階段：原比例置中「失敗提示.png」（顯示答對幾題 + 雙按鈕） -->
+    <div id="fail-modal" class="white-fail-overlay" style="display: none">
+      <div class="fail-dialog-window">
+        <img
+          src="../img/結算/失敗提示.png"
+          class="dialog-window-img"
+          alt="失敗提示"
+        />
+
+        <!-- 動態得分 -->
+        <div id="fail-score-num" class="fail-score-pos">0</div>
+        <!-- 總題數 5 -->
+        <div class="fail-total-pos">5</div>
+
+        <!-- 雙按鈕區 -->
+        <div class="fail-btn-group">
+          <button class="fail-img-btn" onclick="retryQuizOnly()">
+            <img src="../img/結算/再玩一次按鈕.png" alt="再玩一次" />
+          </button>
+          <button class="fail-img-btn" onclick="restartWholeGame()">
+            <img src="../img/結算/回到首頁按鈕.png" alt="回到首頁" />
+          </button>
+        </div>
+      </div>
+    </div>
     <!-- ④ 遊戲主畫面（滿版 16:9 容器） -->
     <div class="game-container">
       <img class="bg-img" src="../img/背景/題目背景倒方.png" alt="題目背景" />
@@ -206,7 +221,18 @@
 
     <!-- 答對 / 答錯 結果圖片回饋畫面 -->
     <div id="feedback-overlay" class="overlay" style="display: none">
-      <img id="feedback-img" src="../img/題目/答對.png" alt="答題結果" />
+      <img
+        id="feedback-correct-img"
+        src="../img/題目/答對.png"
+        alt="答對"
+        style="display: none"
+      />
+      <img
+        id="feedback-wrong-img"
+        src="../img/題目/答錯.png"
+        alt="答錯"
+        style="display: none"
+      />
     </div>
     <!-- JavaScript 遊戲邏輯 -->
     <script>
@@ -313,7 +339,7 @@
         "../img/題目/start.png",
       ];
       const correctImgSrc = "../img/題目/答對.png"; // ← 請確認你們的「答對圖」檔名
-      const wrongImgSrc = "../img/題目/答錯.png"; // ← 請確認你們的「答錯圖」檔名
+      const wrongImgSrc = "../img/題目/失敗.png"; // ← 請確認你們的「答錯圖」檔名
 
       let currentIndex = 0;
       let score = 0;
@@ -520,29 +546,48 @@
         });
       });
 
-      // 8. 顯示答對／答錯圖片（答題結束立刻停止背景音樂）
+      // 8. 顯示答對／答錯圖片（完全對應你現在的 feedback-correct-img / feedback-wrong-img）
       function showAnswerFeedback(isCorrect) {
         if (quizBgm) {
           quizBgm.pause();
           quizBgm.currentTime = 0;
         }
 
-        feedbackImg.src = isCorrect ? correctImgSrc : wrongImgSrc;
-        feedbackOverlay.style.display = "flex";
+        const overlay = document.getElementById("feedback-overlay");
+        const correctImg = document.getElementById("feedback-correct-img");
+        const wrongImg = document.getElementById("feedback-wrong-img");
 
-        feedbackOverlay.classList.remove("shake-red-fx", "flash-yellow-fx");
-        feedbackImg.classList.remove("pop-anim");
-        void feedbackOverlay.offsetWidth;
+        // 先重置兩張圖的狀態
+        if (correctImg) {
+          correctImg.style.display = "none";
+          correctImg.classList.remove("pop-anim");
+        }
+        if (wrongImg) {
+          wrongImg.style.display = "none";
+          wrongImg.classList.remove("pop-anim");
+        }
+
+        if (overlay) {
+          overlay.style.display = "flex";
+          overlay.classList.remove("shake-red-fx", "flash-yellow-fx");
+          void overlay.offsetWidth;
+        }
 
         if (isCorrect) {
-          feedbackOverlay.classList.add("flash-yellow-fx");
+          if (correctImg) correctImg.style.display = "block";
+          if (overlay) overlay.classList.add("flash-yellow-fx");
           if (sfxCorrect) {
             sfxCorrect.currentTime = 0;
             sfxCorrect.play().catch(() => {});
           }
         } else {
-          feedbackOverlay.classList.add("shake-red-fx");
-          triggerPopAnimation(feedbackImg);
+          if (wrongImg) {
+            wrongImg.style.display = "block";
+            if (typeof triggerPopAnimation === "function") {
+              triggerPopAnimation(wrongImg);
+            }
+          }
+          if (overlay) overlay.classList.add("shake-red-fx");
           if (sfxWrong) {
             sfxWrong.currentTime = 0;
             sfxWrong.play().catch(() => {});
@@ -550,8 +595,10 @@
         }
 
         setTimeout(() => {
-          feedbackOverlay.style.display = "none";
-          feedbackOverlay.classList.remove("shake-red-fx", "flash-yellow-fx");
+          if (overlay) {
+            overlay.style.display = "none";
+            overlay.classList.remove("shake-red-fx", "flash-yellow-fx");
+          }
           nextQuestion();
         }, 2000);
       }
@@ -566,11 +613,17 @@
         }
       }
 
-      // 角色對照表
+      // 角色對照表（指向戴金牌的結算專用圖，並相容各種儲存名稱）
       const resultCharacterMap = {
-        "角色 1": "../img/角色/角色1.png",
-        "角色 2": "../img/角色/角色2.png",
-        "角色 3": "../img/角色/角色3.png",
+        "角色 1": "../img/角色/角色1金牌.png",
+        "角色 2": "../img/角色/角色2金牌.png",
+        "角色 3": "../img/角色/角色3金牌.png",
+        角色1: "../img/角色/角色1金牌.png",
+        角色2: "../img/角色/角色2金牌.png",
+        角色3: "../img/角色/角色3金牌.png",
+        1: "../img/角色/角色1金牌.png",
+        2: "../img/角色/角色2金牌.png",
+        3: "../img/角色/角色3金牌.png",
       };
 
       // 10. 答題結束：先播放「結算中動畫」2.2 秒，再依分數跳轉成功或失敗畫面
@@ -590,30 +643,49 @@
             calcModal.style.display = "none";
           }
 
+          // 徹底隱藏底層題目畫面，避免透明處透出重疊
+          const gameContainer = document.querySelector(".game-container");
+          if (gameContainer) gameContainer.style.display = "none";
+
           const savedName = localStorage.getItem("playerName") || "視傳系勇者";
           const savedChar =
             localStorage.getItem("selectedCharacter") || "角色 1";
 
           if (score >= 3) {
-            document.getElementById("cert-player-name").textContent = savedName;
-            document.getElementById("cert-score-display").textContent =
-              `通關成績：${score} / 5 題`;
+            // --- 通關成功 ---
+            const nameEl = document.getElementById("cert-player-name");
+            if (nameEl) nameEl.textContent = savedName;
 
-            const today = new Date();
-            document.getElementById("cert-date").textContent =
-              `${today.getFullYear()}.${today.getMonth() + 1}.${today.getDate()}`;
+            const scoreEl = document.getElementById("cert-score-display");
+            if (scoreEl) scoreEl.textContent = `${score}/5`;
 
             const certCharImg = document.getElementById("cert-char-img");
-            if (resultCharacterMap[savedChar]) {
+            if (certCharImg && resultCharacterMap[savedChar]) {
               certCharImg.src = resultCharacterMap[savedChar];
             }
 
-            document.getElementById("success-modal").style.display = "flex";
+            const successModal = document.getElementById("success-modal");
+            if (successModal) successModal.style.display = "flex";
+
+            if (typeof startWebcam === "function") startWebcam();
           } else {
-            document.getElementById("fail-score-text").textContent =
-              `最終得分：${score} / 5 分`;
-            document.getElementById("fail-modal").style.display = "flex";
-            startWebcam();
+            // --- 通關失敗 ---
+            const failIntro = document.getElementById("fail-intro-modal");
+            const failModal = document.getElementById("fail-modal");
+            const failScoreNum = document.getElementById("fail-score-num");
+
+            if (failScoreNum) failScoreNum.textContent = score;
+
+            // 先強制確保兩個失敗頁不會同時顯示
+            if (failModal) failModal.style.display = "none";
+
+            if (failIntro && failModal) {
+              failIntro.style.display = "block";
+              setTimeout(() => {
+                failIntro.style.display = "none";
+                failModal.style.display = "flex";
+              }, 1800);
+            }
           }
         }, 2200);
       }
@@ -633,11 +705,31 @@
             })
             .catch(() => {});
         } else {
-          navigator.clipboard
-            .writeText(`${shareText}\n${shareUrl}`)
-            .then(() => {
-              alert("已複製你的通關戰績與遊戲網址！快貼上分享給朋友吧！");
-            });
+          const failIntro = document.getElementById("fail-intro-modal");
+          const introBadge = document.getElementById("fail-intro-score-badge");
+          const introScoreVal = document.getElementById("intro-score-val");
+          const failModal = document.getElementById("fail-modal");
+          const failScoreNum = document.getElementById("fail-score-num");
+
+          // 填入分數
+          if (introScoreVal) introScoreVal.textContent = score;
+          if (failScoreNum) failScoreNum.textContent = score;
+
+          // 階段 1（0 秒）：先顯示滿版藍色「FAIL 提示畫面」
+          if (failModal) failModal.style.display = "none";
+          if (introBadge) introBadge.style.display = "none";
+          if (failIntro) failIntro.style.display = "block";
+
+          // 階段 2（1.0 秒後）：在藍色 FAIL 下方跳出「顯示對幾題」
+          setTimeout(() => {
+            if (introBadge) introBadge.style.display = "block";
+          }, 1000);
+
+          // 階段 3（2.8 秒後）：關閉藍色 FAIL，跳到原比例置中的「挑戰失敗頁面」
+          setTimeout(() => {
+            if (failIntro) failIntro.style.display = "none";
+            if (failModal) failModal.style.display = "flex";
+          }, 2800);
         }
       }
 
@@ -645,15 +737,23 @@
       preloadAllImages();
       loadStage();
 
-      // 寫在 03.html 的「回到首頁 / 重新挑戰」按鈕點擊事件裡
+      // 按鈕 1：再玩一次（不回首頁，直接留在 03.html 從第 1 題重新挑戰）
+      function retryQuizOnly() {
+        window.location.reload();
+      }
+
+      // 按鈕 2：回到首頁（跳回 01.html）
       function restartWholeGame() {
         try {
+          if (webcamStream) {
+            webcamStream.getTracks().forEach((track) => track.stop());
+          }
           const parentBgmBtn =
             window.parent.document.getElementById("global-bgm-btn");
-          if (parentBgmBtn) parentBgmBtn.style.display = "flex"; // 恢復顯示外層喇叭按鈕
+          if (parentBgmBtn) parentBgmBtn.style.display = "flex";
         } catch (e) {}
 
-        window.location.href = "../0102/01.html"; // 回到首頁開始畫面
+        window.location.href = "../0102/01.html";
       }
       let webcamStream = null;
 
