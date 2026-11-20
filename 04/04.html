@@ -11,6 +11,25 @@
     <!-- 共用點擊音效 -->
     <audio id="sfx-click" src="../sound/按鈕聲.wav" preload="auto"></audio>
 
+    <!-- 第二關：關卡說明彈窗（一進畫面先顯示） -->
+    <div id="color-intro-modal" class="intro-modal-overlay">
+      <div class="intro-pixel-box">
+        <div class="intro-badge">STAGE 02 // 關卡說明</div>
+        <h2 class="intro-title">色彩敏感度校準挑戰</h2>
+        <div class="intro-rules">
+          <p>1. 觀察左側「題目目標色」展示的標準色票。</p>
+          <p>2. 點擊右側「你的調色盤」色塊開啟檢色器。</p>
+          <p>3. 拖曳調色盤與色相條調出最接近的顏色。</p>
+          <p class="highlight-rule">
+            ★ 相似度達 85% 以上即算挑戰成功（共 3 題）！
+          </p>
+        </div>
+        <button class="intro-start-btn" onclick="startColorStage()">
+          開始校色 READY
+        </button>
+      </div>
+    </div>
+
     <div class="game-container">
       <!-- 頂部資訊列 -->
       <div class="stage-header">
@@ -136,21 +155,14 @@
       const stageScoreDisplay = document.getElementById("stage-score-display");
       const sfxClick = document.getElementById("sfx-click");
 
-      // 開啟／關閉檢色器彈窗
-      function openColorPicker() {
-        if (isLocked) return;
+      // 點擊「開始校色 READY」關閉關卡說明彈窗
+      function startColorStage() {
         if (sfxClick) {
           sfxClick.currentTime = 0;
           sfxClick.play().catch(() => {});
         }
-        // 一打開檢色器就先隱藏文字，方便邊拉邊對色
-        if (clickTip) clickTip.style.display = "none";
-        playerSwatch.style.border = "5px solid #3b1e10";
-
-        pickerModal.style.display = "flex";
-        drawHueBar();
-        drawSVBox();
-        updatePickedColor();
+        const introModal = document.getElementById("color-intro-modal");
+        if (introModal) introModal.style.display = "none";
       }
 
       function closeColorPicker() {
