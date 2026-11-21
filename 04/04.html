@@ -164,7 +164,21 @@
         const introModal = document.getElementById("color-intro-modal");
         if (introModal) introModal.style.display = "none";
       }
+      // 開啟檢色器彈窗
+      function openColorPicker() {
+        if (isLocked) return;
+        if (sfxClick) {
+          sfxClick.currentTime = 0;
+          sfxClick.play().catch(() => {});
+        }
+        if (clickTip) clickTip.style.display = "none";
+        playerSwatch.style.border = "5px solid #3b1e10";
 
+        pickerModal.style.display = "flex";
+        drawHueBar();
+        drawSVBox();
+        updatePickedColor();
+      }
       function closeColorPicker() {
         if (sfxClick) {
           sfxClick.currentTime = 0;

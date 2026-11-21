@@ -110,6 +110,104 @@
       </div>
     </div>
     <!-- 👈 就是少了這個 game-container 的結尾標籤！ -->
+
+    <!-- 結算中過場動畫 -->
+    <div id="calc-modal" class="overlay" style="display: none">
+      <div class="calc-box">
+        <div class="calc-spinner"></div>
+        <h2 class="calc-text">系統結算三大關數據中...</h2>
+        <p class="calc-subtext">正在整合選擇題、色彩調校與字體辨識成績</p>
+      </div>
+    </div>
+
+    <!-- 通關獎狀畫面 -->
+    <div id="success-modal" class="modal-overlay" style="display: none">
+      <div class="cert-container">
+        <img
+          src="../img/結算/獎狀底圖.png"
+          class="cert-bg"
+          alt="異世界逃脫證明書"
+        />
+        <div id="cert-score-display" class="cert-text score-pos">14/14</div>
+        <div id="cert-player-name" class="cert-text name-pos">視傳系勇者</div>
+        <img
+          id="cert-char-img"
+          src="../img/角色/角色1金牌.png"
+          class="cert-char"
+          alt="通關角色"
+        />
+
+        <div class="camera-box">
+          <video id="player-webcam" autoplay playsinline></video>
+          <canvas id="photo-canvas" style="display: none"></canvas>
+        </div>
+        <img src="../img/結算/皇冠.png" class="cert-crown" alt="皇冠" />
+
+        <button id="snap-btn" class="img-btn snap-pos" onclick="takeSnapshot()">
+          <img src="../img/結算/拍照按鈕.png" alt="拍照" />
+        </button>
+        <button
+          id="retake-btn"
+          class="img-btn snap-pos"
+          onclick="retakePhoto()"
+          style="display: none"
+        >
+          <img src="../img/結算/拍照按鈕.png" alt="重拍" />
+        </button>
+
+        <button class="img-btn share-pos" onclick="shareResult()">
+          <img src="../img/結算/分享按鈕.png" alt="分享逃脫結果" />
+        </button>
+        <button class="img-btn restart-pos" onclick="restartWholeGame()">
+          <img src="../img/結算/再玩一次按鈕.png" alt="再玩一次" />
+        </button>
+      </div>
+    </div>
+
+    <!-- 挑戰失敗兩階段畫面 -->
+    <div
+      id="fail-intro-modal"
+      class="blue-fail-fullscreen"
+      style="display: none"
+    >
+      <img
+        src="../img/結算/失敗畫面.png"
+        class="blue-bg-cover"
+        alt="失敗畫面"
+      />
+    </div>
+
+    <div id="fail-modal" class="white-fail-overlay" style="display: none">
+      <div class="fail-dialog-window">
+        <img
+          src="../img/結算/失敗提示.png"
+          class="dialog-window-img"
+          alt="失敗提示"
+        />
+        <div id="fail-score-num" class="fail-score-pos">0</div>
+        <div id="fail-total-num" class="fail-total-pos">14</div>
+
+        <div class="fail-btn-group">
+          <button class="fail-img-btn" onclick="restartFromStage1()">
+            <img src="../img/結算/再玩一次按鈕.png" alt="再玩一次" />
+          </button>
+          <button class="fail-img-btn" onclick="restartWholeGame()">
+            <img
+              src="../img/結算/回到首頁按鈕.png"
+              alt="回到首頁"
+              onerror="
+                this.style.display = 'none';
+                this.nextElementSibling.style.display = 'flex';
+              "
+            />
+            <span class="temp-home-placeholder" style="display: none"
+              >回到首頁</span
+            >
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script>
       const sfxClick = document.getElementById("sfx-click");
       const sourceList = document.getElementById("source-card-list");
@@ -287,7 +385,7 @@
 
         totalStage3Score += roundScore;
 
-        // 第 1 題完成 -> 自動切換到第 2 題（新加的進階字體）
+        // 第 1 題完成 -> 自動切換到第 2 題
         if (currentFontRound === 0) {
           currentFontRound = 1;
           loadFontRound(1);
@@ -299,9 +397,11 @@
         const totalScore = s1 + s2 + totalStage3Score;
         const passThreshold = 8;
 
-        document.getElementById("font-game-stage").style.display = "none";
+        const gameStage = document.getElementById("font-game-stage");
+        if (gameStage) gameStage.style.display = "none";
+
         const calcModal = document.getElementById("calc-modal");
-        calcModal.style.display = "flex";
+        if (calcModal) calcModal.style.display = "flex";
 
         const resultCharacterMap = {
           "角色 1": "../img/角色/角色1金牌.png",
@@ -313,32 +413,52 @@
         };
 
         setTimeout(() => {
-          calcModal.style.display = "none";
+          if (calcModal) calcModal.style.display = "none";
+
           const savedName = localStorage.getItem("playerName") || "視傳系勇者";
           const savedChar =
             localStorage.getItem("selectedCharacter") || "角色 1";
 
           if (totalScore >= passThreshold) {
-            document.getElementById("cert-player-name").textContent = savedName;
-            document.getElementById("cert-score-display").textContent =
-              `${totalScore}/${totalQuestions}`;
+            const nameEl = document.getElementById("cert-player-name");
+            const scoreEl = document.getElementById("cert-score-display");
             const certCharImg = document.getElementById("cert-char-img");
-            if (resultCharacterMap[savedChar]) {
+            const successModal = document.getElementById("success-modal");
+
+            if (nameEl) nameEl.textContent = savedName;
+            if (scoreEl)
+              scoreEl.textContent = `${totalScore}/${totalQuestions}`;
+            if (certCharImg && resultCharacterMap[savedChar]) {
               certCharImg.src = resultCharacterMap[savedChar];
             }
-            document.getElementById("success-modal").style.display = "flex";
-            startWebcam();
+            if (successModal) {
+              successModal.style.display = "flex";
+            } else {
+              alert(
+                "找不到 success-modal！請檢查 05.html 是否已貼入通關獎狀的 HTML！",
+              );
+            }
+            if (typeof startWebcam === "function") startWebcam();
           } else {
-            document.getElementById("fail-score-num").textContent = totalScore;
-            document.getElementById("fail-total-num").textContent =
-              totalQuestions;
+            const failScoreNum = document.getElementById("fail-score-num");
+            const failTotalNum = document.getElementById("fail-total-num");
             const failIntro = document.getElementById("fail-intro-modal");
             const failModal = document.getElementById("fail-modal");
-            failIntro.style.display = "block";
-            setTimeout(() => {
-              failIntro.style.display = "none";
-              failModal.style.display = "flex";
-            }, 1800);
+
+            if (failScoreNum) failScoreNum.textContent = totalScore;
+            if (failTotalNum) failTotalNum.textContent = totalQuestions;
+
+            if (failIntro && failModal) {
+              failIntro.style.display = "block";
+              setTimeout(() => {
+                failIntro.style.display = "none";
+                failModal.style.display = "flex";
+              }, 1800);
+            } else {
+              alert(
+                "找不到 fail-modal！請檢查 05.html 是否已貼入失敗畫面的 HTML！",
+              );
+            }
           }
         }, 2200);
       }
