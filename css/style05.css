@@ -765,3 +765,12 @@ body {
   overflow: hidden;
   z-index: 2;
 }
+/* 通關成績 3/5 */
+.score-pos {
+  top: 29.5%;
+  left: 27%;
+  font-size: clamp(16px, 4vw, 24px);
+  color: #ffffff;
+  text-shadow: 1px 1px 0 #7a1010;
+  letter-spacing: 2px;
+}
