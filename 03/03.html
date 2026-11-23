@@ -657,7 +657,7 @@
           }
         }
 
-        // 1.2 秒後收起 O/X，打開該題的「解答視窗圖」
+        // 1.2 秒後收起 O/X，等解答圖解碼完成後「圖片與 X 按鈕同時彈出」
         setTimeout(() => {
           if (overlay) {
             overlay.style.display = "none";
@@ -671,9 +671,23 @@
 
           if (explainModal && explainWindowImg && currentExplainSrc) {
             explainWindowImg.src = currentExplainSrc;
-            explainModal.style.display = "flex";
+
+            // 強制等圖片解碼完成，再顯示整個彈窗（絕不會先跑出 X 按鈕）
+            if (explainWindowImg.decode) {
+              explainWindowImg
+                .decode()
+                .then(() => {
+                  explainModal.style.display = "flex";
+                })
+                .catch(() => {
+                  explainModal.style.display = "flex";
+                });
+            } else {
+              explainWindowImg.onload = () => {
+                explainModal.style.display = "flex";
+              };
+            }
           } else {
-            // 若該題沒設解答圖，則直接進入下一題
             nextQuestion();
           }
         }, 1200);
@@ -763,10 +777,6 @@
           window.location.href = "../04/04.html";
         }, 1800);
       }
-
-      // 啟動預載與第一關
-      preloadAllImages();
-      loadStage();
 
       // 11. 分享脫逃結果功能
       function shareResult() {
@@ -867,6 +877,10 @@
         retakeBtn.style.display = "none";
         snapBtn.style.display = "inline-block";
       }
+
+      // 啟動預載與第一關
+      preloadAllImages();
+      loadStage();
     </script>
   </body>
 </html>
