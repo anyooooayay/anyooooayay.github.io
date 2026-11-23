@@ -44,7 +44,7 @@
         <div class="left-question-panel">
           <div class="panel-tag">題目目標色</div>
           <div id="question-text" class="question-desc">
-            第一題：請觀察左方色塊，調出飽滿的「視傳活力橘」！
+            第一題：請觀察左方色塊<br />調出飽滿的「視傳活力橘」！
           </div>
           <div id="target-swatch" class="target-swatch-box"></div>
           <div class="hint-note">達標門檻：相似度 85% 以上</div>
@@ -111,7 +111,7 @@
       // 3 道設計主題色票題目（已更新為你要的新色票）
       const colorQuestions = [
         {
-          title: "第一題：請觀察左方色塊，調出飽滿的「視傳活力橘」！",
+          title: "第一題：請觀察左方色塊<br>調出飽滿的「視傳活力橘」！",
           targetHex: "#ff5500",
         },
         {
@@ -314,6 +314,7 @@
         handleSVMove(e.clientX, e.clientY);
       });
       hueBox.addEventListener("mousedown", (e) => {
+        e.preventDefault();
         draggingHue = true;
         handleHueMove(e.clientY);
       });
@@ -369,7 +370,7 @@
 
         // 換新題目時，重新顯示「點此調色」提示與虛線框
         if (clickTip) clickTip.style.display = "block";
-        playerSwatch.style.border = "5px dashed #d6362e";
+        playerSwatch.style.border = "5px dashed #5a2d18";
 
         currentH = 0;
         currentS = 0;
@@ -387,6 +388,10 @@
       }
 
       function calculateSimilarity(hex1, hex2) {
+        if (hex2.toLowerCase() === "#808080") {
+          return 0;
+        }
+
         const c1 = hexToRgb(hex1);
         const c2 = hexToRgb(hex2);
         const dist = Math.sqrt(
@@ -394,7 +399,9 @@
             Math.pow(c1.g - c2.g, 2) +
             Math.pow(c1.b - c2.b, 2),
         );
-        return Math.max(0, Math.round((1 - dist / 441.67) * 100));
+
+        const maxAllowedDist = 220;
+        return Math.max(0, Math.round((1 - dist / maxAllowedDist) * 100));
       }
 
       function checkColorAnswer() {
@@ -407,7 +414,7 @@
 
         const targetHex = colorQuestions[currentQ].targetHex;
         const similarity = calculateSimilarity(targetHex, currentPickedHex);
-        const isPass = similarity >= 85;
+        const isPass = similarity >= 80;
 
         if (isPass) {
           colorScore++;

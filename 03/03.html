@@ -247,34 +247,38 @@
         style="display: none"
       />
     </div>
+
+    <!-- 第一關：每題答完後的「解答視窗圖 + 右上角 X 按鈕」 -->
+    <div
+      id="answer-explain-modal"
+      class="overlay"
+      style="display: none; z-index: 960"
+    >
+      <div class="explain-img-wrapper">
+        <!-- 每題對應的解答視窗圖片 -->
+        <img
+          id="explain-window-img"
+          src="../img/題目/題目一解答.png"
+          class="explain-window-img"
+          alt="題目解答"
+        />
+        <!-- 右上角 X 關閉按鈕圖片 -->
+        <button
+          id="close-explain-btn"
+          class="close-explain-btn"
+          onclick="closeAnswerExplain()"
+        >
+          <img src="../img/題目/關閉按鈕.png" alt="關閉解答" />
+        </button>
+      </div>
+    </div>
+
+    <!-- 題目切換：電影感黑屏淡入淡出轉場遮罩 -->
+    <div id="black-fade-transition" class="black-fade-overlay"></div>
+
     <!-- JavaScript 遊戲邏輯 -->
     <script>
-      let countdownTimer = null; // 統一管理倒數計時器，防止重疊
-
-      // 預載 3、2、1 倒數圖片（確認檔名與路徑與你們的一致）
-      ["../img/3.png", "../img/2.png", "../img/1.png"].forEach((src) => {
-        const img = new Image();
-        img.src = src;
-      });
-      // 一進入 03.html 題目頁，立刻通知外層 index.html 停止原本的背景音樂
-      try {
-        const parentBgm = window.parent.document.getElementById("global-bgm");
-        const parentBgmBtn =
-          window.parent.document.getElementById("global-bgm-btn");
-
-        if (parentBgm) {
-          parentBgm.pause(); // 暫停外層背景音樂
-          parentBgm.currentTime = 0; // 將播放進度歸零
-        }
-        if (parentBgmBtn) {
-          parentBgmBtn.textContent = "🔇"; // 同步把外層右上角的喇叭圖示變成靜音
-          parentBgmBtn.style.display = "none"; // 如果進到題目頁也不想看到外層喇叭按鈕，可保留這行直接隱藏它
-        }
-      } catch (e) {
-        console.log("無法存取外層音樂（可能是單獨開啟 03.html 測試）");
-      }
-
-      // 1. 五題完整題庫（每一題都有情境框，並自動切換 picImg、questionImg、optionImgs）
+      // 1. 五題完整題庫（已補齊第 1～5 題解答圖 explainImg）
       const quizData = [
         {
           // 第 1 題
@@ -288,7 +292,8 @@
             "../img/題目/題目一c.png",
             "../img/題目/題目一d.png",
           ],
-          answer: 1, // B (0=A, 1=B, 2=C, 3=D)
+          explainImg: "../img/題目/題目一解答.png",
+          answer: 1,
         },
         {
           // 第 2 題
@@ -302,14 +307,15 @@
             "../img/題目/題目二c.png",
             "../img/題目/題目二d.png",
           ],
-          answer: 1, // B
+          explainImg: "../img/題目/題目二解答.png", // 👈 補上第 2 題解答圖
+          answer: 1,
         },
         {
           // 第 3 題
           showStory: true,
           storyImg: "../img/情境框/題目三情境.png",
-          clueImg: "../img/題目/題目三合成圖.png", // ← 換成你們合成好的第 3 題左側大圖檔名
-          picImg: "", // ← 留空，程式會自動隱藏內圖
+          clueImg: "../img/題目/題目三合成圖.png",
+          picImg: "",
           questionImg: "../img/題目/題目三.png",
           optionImgs: [
             "../img/題目/題目三a.png",
@@ -317,14 +323,15 @@
             "../img/題目/題目三c.png",
             "../img/題目/題目三d.png",
           ],
-          answer: 1, // B
+          explainImg: "../img/題目/題目三解答.png", // 👈 補上第 3 題解答圖
+          answer: 1,
         },
         {
           // 第 4 題
           showStory: true,
           storyImg: "../img/情境框/題目四情境.png",
-          clueImg: "../img/題目/題目四合成圖.png", // ← 換成你們合成好的第 4 題左側大圖檔名
-          picImg: "", // ← 留空，程式會自動隱藏內圖
+          clueImg: "../img/題目/題目四合成圖.png",
+          picImg: "",
           questionImg: "../img/題目/題目四.png",
           optionImgs: [
             "../img/題目/題目四a.png",
@@ -332,14 +339,15 @@
             "../img/題目/題目四c.png",
             "../img/題目/題目四d.png",
           ],
-          answer: 2, // C
+          explainImg: "../img/題目/題目四解答.png", // 👈 補上第 4 題解答圖
+          answer: 2,
         },
         {
           // 第 5 題
           showStory: true,
           storyImg: "../img/情境框/題目五情境.png",
-          clueImg: "../img/題目/題目五合成圖.png", // ← 換成你們合成好的第 5 題左側大圖檔名
-          picImg: "", // ← 留空，程式會自動隱藏內圖
+          clueImg: "../img/題目/題目五合成圖.png",
+          picImg: "",
           questionImg: "../img/題目/題目五.png",
           optionImgs: [
             "../img/題目/題目五a.png",
@@ -347,24 +355,19 @@
             "../img/題目/題目五c.png",
             "../img/題目/題目五d.png",
           ],
-          answer: 3, // D
+          explainImg: "../img/題目/題目五解答.png", // 👈 補上第 5 題解答圖
+          answer: 3,
         },
       ];
 
-      // 2. 倒數圖片 & 答對/答錯圖片路徑（請確認答對、答錯的檔名是否正確）
-      const countdownImages = [
-        "../img/題目/倒數三.png",
-        "../img/題目/倒數二.png",
-        "../img/題目/倒數一.png",
-        "../img/題目/start.png",
-      ];
-      const correctImgSrc = "../img/題目/答對.png"; // ← 請確認你們的「答對圖」檔名
-      const wrongImgSrc = "../img/題目/答錯.png"; // ← 請確認你們的「答錯圖」檔名
+      // 2. 答對/答錯圖片路徑 & 遊戲狀態變數（補回這幾行，JS 就不會報錯中斷了！）
+      const correctImgSrc = "../img/題目/答對.png";
+      const wrongImgSrc = "../img/題目/答錯.png";
 
       let currentIndex = 0;
       let score = 0;
       let quizTimer = null;
-      let isAnswering = false; // 防止玩家重複點擊選項
+      let isAnswering = false;
 
       // 3. 統一抓取所有 HTML 元素
       const storyModal = document.getElementById("story-modal");
@@ -602,7 +605,7 @@
         });
       });
 
-      // 8. 顯示答對／答錯圖片（完全對應你現在的 feedback-correct-img / feedback-wrong-img）
+      // 8. 顯示答對／答錯 O/X ➔ 自動跳出「解答視窗圖」等待玩家按右上角 X 關閉
       function showAnswerFeedback(isCorrect) {
         if (quizBgm) {
           quizBgm.pause();
@@ -613,7 +616,6 @@
         const correctImg = document.getElementById("feedback-correct-img");
         const wrongImg = document.getElementById("feedback-wrong-img");
 
-        // 先重置兩張圖的狀態
         if (correctImg) {
           correctImg.style.display = "none";
           correctImg.classList.remove("pop-anim");
@@ -630,7 +632,12 @@
         }
 
         if (isCorrect) {
-          if (correctImg) correctImg.style.display = "block";
+          if (correctImg) {
+            correctImg.style.display = "block";
+            if (typeof triggerPopAnimation === "function") {
+              triggerPopAnimation(correctImg);
+            }
+          }
           if (overlay) overlay.classList.add("flash-yellow-fx");
           if (sfxCorrect) {
             sfxCorrect.currentTime = 0;
@@ -650,18 +657,66 @@
           }
         }
 
+        // 1.2 秒後收起 O/X，打開該題的「解答視窗圖」
         setTimeout(() => {
           if (overlay) {
             overlay.style.display = "none";
             overlay.classList.remove("shake-red-fx", "flash-yellow-fx");
           }
-          nextQuestion();
-        }, 2000);
+
+          const explainModal = document.getElementById("answer-explain-modal");
+          const explainWindowImg =
+            document.getElementById("explain-window-img");
+          const currentExplainSrc = quizData[currentIndex].explainImg;
+
+          if (explainModal && explainWindowImg && currentExplainSrc) {
+            explainWindowImg.src = currentExplainSrc;
+            explainModal.style.display = "flex";
+          } else {
+            // 若該題沒設解答圖，則直接進入下一題
+            nextQuestion();
+          }
+        }, 1200);
       }
 
-      // 9. 切換下一題或進入結算
+      // 點擊解答視窗右上角的「X 按鈕圖片」➔ 黑屏淡入淡出轉場進入下一題（防卡死安全版）
+      function closeAnswerExplain() {
+        if (typeof playClickSound === "function") playClickSound();
+        const explainModal = document.getElementById("answer-explain-modal");
+        const blackFade = document.getElementById("black-fade-transition");
+
+        // 如果是最後一題（第 5 題）答完，直接關閉解答並進入第二關過場
+        if (currentIndex + 1 >= quizData.length) {
+          if (explainModal) explainModal.style.display = "none";
+          nextQuestion();
+          return;
+        }
+
+        // 1. 畫面淡入變全黑
+        if (blackFade) blackFade.classList.add("is-black");
+
+        // 2. 等畫面變黑後切換題目，並確保黑屏一定會淡出
+        setTimeout(() => {
+          try {
+            if (explainModal) explainModal.style.display = "none";
+            nextQuestion();
+          } catch (err) {
+            console.error("切換下一題時發生錯誤：", err);
+          } finally {
+            // 無論如何，0.15 秒後一定把黑屏移除，絕不卡死！
+            setTimeout(() => {
+              if (blackFade) blackFade.classList.remove("is-black");
+            }, 150);
+          }
+        }, 380);
+      }
+
+      // 9. 切換下一題或進入第二關過場
       function nextQuestion() {
         currentIndex++;
+        isAnswering = false;
+        isCountingDown = false;
+
         if (currentIndex < quizData.length) {
           loadStage();
         } else {
