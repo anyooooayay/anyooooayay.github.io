@@ -7,7 +7,13 @@
     <link rel="stylesheet" href="../css/style05.css" />
     <link rel="icon" type="image/png" href="../img/小裝飾/Iconeye1.png" />
     <!-- 加入進階字體 Google Fonts -->
-    <link rel="stylesheet" href="https://googleapis.com" />
+    <!-- 分開引入三種進階字體（短網址不截斷） -->
+    <style>
+      @import url("https://googleapis.com");
+      @import url("https://googleapis.com");
+      @import url("https://googleapis.com");
+      @import url("https://googleapis.com");
+    </style>
   </head>
   <body>
     <audio id="sfx-click" src="../sound/按鈕聲.wav" preload="auto"></audio>
@@ -239,6 +245,7 @@
       const cards = document.querySelectorAll(".font-sample-card");
       const dropSlots = document.querySelectorAll(".font-drop-slot");
 
+      // 讀取前兩關分數
       const s1 = Number(localStorage.getItem("stage1Score")) || 0;
       const s2 = Number(localStorage.getItem("stage2Score")) || 0;
       document.getElementById("prev-score-tag").textContent =
@@ -252,65 +259,66 @@
         document.getElementById("font-intro-modal").style.display = "none";
       }
 
-      // 兩題字體題庫（含詳細筆畫特徵解析）
+      // 兩題字體題庫：第 1 題中文 PNG 圖，第 2 題英文 PNG 圖
       const fontRounds = [
         {
-          progressLabel: "第 1 / 2 題（基礎篇）",
+          progressLabel: "第 1 / 2 題（中文字體篇）",
           btnLabel: "確認送出・查看解析",
-          nextActionLabel: "進入第 2 題（進階篇）",
-          items: [
-            {
-              id: "jhenghei",
-              label: "微軟正黑體",
-              className: "font-jhenghei",
-              desc: "無襯線黑體：橫豎筆畫粗細均勻、末端平切無裝飾，現代感強且螢幕閱讀清晰。",
-            },
-            {
-              id: "mingliu",
-              label: "新細明體",
-              className: "font-mingliu",
-              desc: "襯線明體：橫細直粗、橫畫末端帶有明顯三角形「襯線（頓點）」，適合長篇印刷排版。",
-            },
-            {
-              id: "kai",
-              label: "標楷體",
-              className: "font-kai",
-              desc: "傳統楷書：模仿毛筆書寫筆觸，筆畫帶有起筆頓點、傾斜角度與流暢勾挑。",
-            },
-          ],
-        },
-        {
-          progressLabel: "第 2 / 2 題（進階篇）",
-          btnLabel: "完成挑戰・查看解析",
-          nextActionLabel: "前往三大關總結算",
+          nextActionLabel: "進入第 2 題（英文字體篇）",
           items: [
             {
               id: "noto-sans",
               label: "思源黑體",
-              className: "font-noto-sans",
-              desc: "幾何黑體：結構方正飽滿、轉角銳利俐落，是網頁與介面設計最標準的無襯線字體。",
+              imgSrc: "../img/字體題/思源黑體.png",
+              desc: "現代標準黑體：字面飽滿方正、橫豎筆畫末端完全平切，觀察「設」的言字旁第一筆為斜點。",
             },
             {
-              id: "zen-maru",
-              label: "源泉圓體",
-              className: "font-zen-maru",
-              desc: "圓體設計：骨架與黑體相似，但所有筆畫末端與轉角皆做「圓弧導角」，視覺溫潤親切。",
+              id: "jhenghei",
+              label: "微軟正黑體",
+              imgSrc: "../img/字體題/微軟正黑體.png",
+              desc: "螢幕介面黑體：中宮較為緊湊修長、字重偏輕，「設」的言字旁第一筆為橫畫，筆畫轉折俐落。",
             },
             {
-              id: "wenkai",
-              label: "霞鶩文楷",
-              className: "font-wenkai",
-              desc: "硬筆文楷：融合楷書筆意與現代黑體比例，保留手寫頓挫但結構更內斂文青。",
+              id: "songti",
+              label: "宋體",
+              imgSrc: "../img/字體題/宋體.png",
+              desc: "經典襯線宋體：橫細直粗、橫畫末端帶有明顯三角形「襯線（頓點）」，充滿人文印刷書卷氣息。",
+            },
+          ],
+        },
+        {
+          progressLabel: "第 2 / 2 題（英文字體篇）",
+          btnLabel: "完成挑戰・查看解析",
+          nextActionLabel: "前往三大關總結算",
+          items: [
+            {
+              id: "times",
+              label: "Times New Roman",
+              imgSrc: "../img/字體題/TimesNewRoman.png",
+              desc: "過渡期襯線體：字母末端帶有明顯的三角形襯線（Serif）與弧形托架，筆畫粗細對比適中。",
+            },
+            {
+              id: "helvetica",
+              label: "Helvetica",
+              imgSrc: "../img/字體題/Helvetica.png",
+              desc: "現代主義無襯線體：無任何襯線裝飾、線條粗細均勻純粹，大寫「I」為單純一豎、切角水平俐落。",
+            },
+            {
+              id: "didot",
+              label: "Didot",
+              imgSrc: "../img/字體題/Didot.png",
+              desc: "現代時尚襯線體：垂直主幹極粗、水平橫線與平直襯線如髮絲般極細，明暗對比最為強烈。",
             },
           ],
         },
       ];
+
       let currentFontRound = 0;
       let totalStage3Score = 0;
       let draggedCard = null;
       let selectedCardForTap = null;
 
-      // 載入指定題目並洗牌
+      // 載入指定題目：左邊放圖片、右邊放字體名稱並洗牌
       function loadFontRound(roundIndex) {
         const roundData = fontRounds[roundIndex];
         const progressEl = document.getElementById("font-q-progress");
@@ -330,9 +338,9 @@
 
         roundData.items.forEach((item, idx) => {
           const card = cards[idx];
-          card.className = `font-sample-card ${item.className}`;
+          card.className = "font-sample-card";
           card.dataset.font = item.id;
-          card.textContent = "我已經學會設計";
+          card.innerHTML = `<img src="${item.imgSrc}" class="font-card-img" alt="${item.label}" />`;
 
           const slot = dropSlots[idx];
           slot.dataset.target = item.id;
@@ -344,7 +352,7 @@
         cardArr.forEach((c) => sourceList.appendChild(c));
       }
 
-      // 綁定卡片拖曳與點擊選取
+      // 綁定卡片拖曳與點擊
       cards.forEach((card) => {
         card.addEventListener("dragstart", (e) => {
           draggedCard = card;
@@ -365,7 +373,6 @@
         });
       });
 
-      // 將卡片放入右側槽位
       function placeCardIntoSlot(slot, cardToPlace) {
         if (!cardToPlace) return;
         const holder = slot.querySelector(".slot-holder");
@@ -387,7 +394,6 @@
         }
       }
 
-      // 綁定右側放置槽接收拖曳與點擊
       dropSlots.forEach((slot) => {
         slot.addEventListener("dragover", (e) => {
           e.preventDefault();
@@ -407,12 +413,27 @@
         });
       });
 
-      // 送出當前題目 -> 顯示「答對/答錯狀態 + 正確答案與解析彈窗」
+      function resetFontCards() {
+        if (sfxClick) {
+          sfxClick.currentTime = 0;
+          sfxClick.play().catch(() => {});
+        }
+        cards.forEach((c) => {
+          c.classList.remove("selected-card");
+          sourceList.appendChild(c);
+        });
+        dropSlots.forEach((slot) => {
+          const holder = slot.querySelector(".slot-holder");
+          holder.textContent = holder.dataset.placeholder;
+        });
+        selectedCardForTap = null;
+      }
+
+      // 送出當前題目 -> 顯示答對/答錯與圖片解析彈窗
       function submitFontMatching() {
         let placedCount = 0;
         let roundScore = 0;
-        const userResultMap = {}; // 記錄每個正確答案對應的玩家作答結果
-
+        const userResultMap = {};
         const roundData = fontRounds[currentFontRound];
 
         dropSlots.forEach((slot) => {
@@ -424,11 +445,8 @@
             const userFontId = placedCard.dataset.font;
             const isCorrect = userFontId === targetFontId;
 
-            if (isCorrect) {
-              roundScore++;
-            }
+            if (isCorrect) roundScore++;
 
-            // 找出玩家放進去的字體中文名稱（若答錯時顯示給玩家看）
             const userFontObj = roundData.items.find(
               (i) => i.id === userFontId,
             );
@@ -451,13 +469,11 @@
 
         totalStage3Score += roundScore;
 
-        // 更新彈窗頂部得分標籤與按鈕文字
         document.getElementById("explain-score-badge").textContent =
           `本題答對：${roundScore} / 3 題`;
         document.getElementById("explain-next-btn").textContent =
           roundData.nextActionLabel;
 
-        // 組合解析列表（加上答對綠色標籤 / 答錯紅色標籤與錯誤提示）
         const explainList = document.getElementById("explain-list");
         explainList.innerHTML = roundData.items
           .map((item) => {
@@ -471,7 +487,9 @@
 
             return `
               <div class="explain-item ${statusClass}">
-                <div class="explain-sample-box ${item.className}">我已經學會設計</div>
+                <div class="explain-sample-box">
+                  <img src="${item.imgSrc}" class="explain-sample-img" alt="${item.label}" />
+                </div>
                 <div class="explain-text-group">
                   <div class="explain-header-row">
                     <span class="explain-font-name">${item.label}</span>
@@ -487,7 +505,7 @@
         document.getElementById("font-explain-modal").style.display = "flex";
       }
 
-      // 點擊解析彈窗的「繼續」按鈕後，進入第 2 題或總結算
+      // 點擊解析彈窗「繼續」按鈕 -> 切第 2 題或總結算
       function proceedAfterExplain() {
         if (sfxClick) {
           sfxClick.currentTime = 0;
@@ -495,14 +513,12 @@
         }
         document.getElementById("font-explain-modal").style.display = "none";
 
-        // 若剛結束第 1 題 -> 載入第 2 題
         if (currentFontRound === 0) {
           currentFontRound = 1;
           loadFontRound(1);
           return;
         }
 
-        // 若兩題皆結束 -> 執行三大關總結算（滿分 5 + 3 + 6 = 14 分）
         const totalQuestions = 14;
         const totalScore = s1 + s2 + totalStage3Score;
         const passThreshold = 8;
