@@ -395,7 +395,16 @@ img {
 .avatar-wrapper.is-hovered .avatar-hover {
   opacity: 1;
 }
+/* 直接支援純 CSS :hover，就算 JS 沒綁到也能正常換圖 */
+.avatar-wrapper:hover,
+.avatar-wrapper.is-hovered {
+  cursor: pointer;
+}
 
+.avatar-wrapper:hover .avatar-hover,
+.avatar-wrapper.is-hovered .avatar-hover {
+  opacity: 1;
+}
 /* === 滑鼠移過去放大共通設定 === */
 .hover-zoom {
   position: absolute;
