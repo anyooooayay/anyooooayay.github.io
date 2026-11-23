@@ -48,13 +48,26 @@
     <audio id="sfx-correct" src="../audio/correct.mp3" preload="auto"></audio>
     <audio id="sfx-wrong" src="../audio/wrong.mp3" preload="auto"></audio>
 
-    <!-- ② 3、2、1、START 準備倒數畫面 -->
+    <!-- 倒數 3、2、1、START 遮罩（4張圖同時預載進記憶體，零延遲切換） -->
     <div id="countdown-overlay" class="overlay" style="display: none">
+      <img src="../img/題目/倒數三.png" class="cd-step-img pop-anim" alt="3" />
       <img
-        id="countdown-img"
-        class="countdown-pic"
-        src="../img/題目/倒數三.png"
-        alt="倒數圖片"
+        src="../img/題目/倒數二.png"
+        class="cd-step-img pop-anim"
+        style="display: none"
+        alt="2"
+      />
+      <img
+        src="../img/題目/倒數一.png"
+        class="cd-step-img pop-anim"
+        style="display: none"
+        alt="1"
+      />
+      <img
+        src="../img/題目/start.png"
+        class="cd-step-img pop-anim"
+        style="display: none"
+        alt="START"
       />
     </div>
 
@@ -375,24 +388,38 @@
       if (quizBgm) quizBgm.volume = 0.3;
       if (sfxCorrect) sfxCorrect.volume = 0.75;
       if (sfxWrong) sfxWrong.volume = 0.7;
-      // 4. 背景預載所有圖片（包含題庫、倒數圖與答對/答錯圖）
+      const cdStepImgs = document.querySelectorAll(".cd-step-img");
+
+      // 4. 背景預載＋強制解碼所有圖片進記憶體（徹底消滅第一次切換卡頓）
       function preloadAllImages() {
+        // 優先強制解碼 4 張倒數圖
+        cdStepImgs.forEach((img) => {
+          if (img.decode) {
+            img.decode().catch(() => {});
+          }
+        });
+
         quizData.forEach((item) => {
-          if (item.storyImg) new Image().src = item.storyImg;
-          if (item.clueImg) new Image().src = item.clueImg;
-          if (item.picImg) new Image().src = item.picImg;
-          if (item.questionImg) new Image().src = item.questionImg;
-          item.optionImgs.forEach((src) => {
-            new Image().src = src;
+          [
+            item.storyImg,
+            item.clueImg,
+            item.picImg,
+            item.questionImg,
+            ...item.optionImgs,
+          ].forEach((src) => {
+            if (src) {
+              const im = new Image();
+              im.src = src;
+              if (im.decode) im.decode().catch(() => {});
+            }
           });
         });
 
-        countdownImages.forEach((src) => {
-          new Image().src = src;
+        [correctImgSrc, wrongImgSrc].forEach((src) => {
+          const im = new Image();
+          im.src = src;
+          if (im.decode) im.decode().catch(() => {});
         });
-
-        new Image().src = correctImgSrc;
-        new Image().src = wrongImgSrc;
       }
 
       // 第 5 區：載入當前題目
@@ -476,7 +503,7 @@
 
       // 依序播放 4 張倒數圖片（3 ➔ 2 ➔ 1 ➔ START）＋ 每一下都同步播放音效
       function startReadyCountdown() {
-        if (isCountingDown) return; // 正在倒數中就忽略重複點擊
+        if (isCountingDown) return;
         isCountingDown = true;
 
         if (readyInterval) {
@@ -484,20 +511,29 @@
           readyInterval = null;
         }
 
+        function showCdStep(idx) {
+          cdStepImgs.forEach((img, i) => {
+            if (i === idx) {
+              img.style.display = "block";
+              triggerPopAnimation(img);
+            } else {
+              img.style.display = "none";
+            }
+          });
+        }
+
         countdownOverlay.style.display = "flex";
         let step = 0;
 
         // 顯示第 1 張（數字 3）並播放第 1 聲
-        countdownImg.src = countdownImages[0];
-        triggerPopAnimation(countdownImg);
+        showCdStep(0);
         playClickSound();
 
         readyInterval = setInterval(() => {
           step++;
-          if (step < countdownImages.length) {
-            // 依序切換成 2 ➔ 1 ➔ START 並播放音效
-            countdownImg.src = countdownImages[step];
-            triggerPopAnimation(countdownImg);
+          if (step < cdStepImgs.length) {
+            // 依序瞬切 2 ➔ 1 ➔ START 並播放音效
+            showCdStep(step);
             playClickSound();
           } else {
             clearInterval(readyInterval);
