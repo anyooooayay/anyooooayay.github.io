@@ -236,6 +236,13 @@
     </div>
     <!-- JavaScript 遊戲邏輯 -->
     <script>
+      let countdownTimer = null; // 統一管理倒數計時器，防止重疊
+
+      // 預載 3、2、1 倒數圖片（確認檔名與路徑與你們的一致）
+      ["../img/3.png", "../img/2.png", "../img/1.png"].forEach((src) => {
+        const img = new Image();
+        img.src = src;
+      });
       // 一進入 03.html 題目頁，立刻通知外層 index.html 停止原本的背景音樂
       try {
         const parentBgm = window.parent.document.getElementById("global-bgm");
@@ -464,17 +471,28 @@
           });
         });
 
+      let readyInterval = null; // 統一管理倒數計時器
+      let isCountingDown = false; // 防止連點 READY 觸發多重倒數
+
       // 依序播放 4 張倒數圖片（3 ➔ 2 ➔ 1 ➔ START）＋ 每一下都同步播放音效
       function startReadyCountdown() {
+        if (isCountingDown) return; // 正在倒數中就忽略重複點擊
+        isCountingDown = true;
+
+        if (readyInterval) {
+          clearInterval(readyInterval);
+          readyInterval = null;
+        }
+
         countdownOverlay.style.display = "flex";
         let step = 0;
 
         // 顯示第 1 張（數字 3）並播放第 1 聲
         countdownImg.src = countdownImages[0];
-        triggerPopAnimation(countdownImg); // 正確傳入 countdownImg
-        playClickSound(); // 同步播放音效
+        triggerPopAnimation(countdownImg);
+        playClickSound();
 
-        const readyInterval = setInterval(() => {
+        readyInterval = setInterval(() => {
           step++;
           if (step < countdownImages.length) {
             // 依序切換成 2 ➔ 1 ➔ START 並播放音效
@@ -483,6 +501,8 @@
             playClickSound();
           } else {
             clearInterval(readyInterval);
+            readyInterval = null;
+            isCountingDown = false;
             countdownOverlay.style.display = "none";
             startQuestionTimer();
           }
@@ -610,8 +630,6 @@
           loadStage();
         } else {
           showFinalResult();
-          localStorage.setItem("stage1Score", score); // 存下選擇題分數
-          window.location.href = "../04/04.html"; // 跳轉到第二關：顏色題
         }
       }
 
@@ -682,10 +700,6 @@
           }
         }
       }
-
-      // 啟動預載與第一關
-      preloadAllImages();
-      loadStage();
 
       // 按鈕 1：再玩一次（不回首頁，直接留在 03.html 從第 1 題重新挑戰）
       function retryQuizOnly() {
