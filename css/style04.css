@@ -45,19 +45,22 @@ body {
 
 /* 頂部關卡標題與題號 */
 .stage-header {
-  width: 100%;
+  width: 105%;
+  height: 12%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 18px;
-  background: rgba(0, 35, 118, 0.99);
-  border: 4px solid #ffd23f;
-  padding: 10px 24px;
-  color: #ffd23f;
+  background: #002376fc !important; /* 與 04 一致的深寶藍 */
+  border: 4px solid #ffd23f !important; /* 與 04 一致的亮金黃邊框 */
+  padding: 10px 34px !important;
+  color: #ffd23f !important; /* 與 04 一致的亮金黃文字 */
+  box-shadow: 0 6px 0 #3b1e10 !important;
+  padding: 10px 34px;
+  color: #ffffff;
   font-size: clamp(18px, 2vw, 26px);
   font-weight: bold;
-  letter-spacing: 5px;
-  box-shadow: 0 6px 0 #3b1e10;
+  letter-spacing: 7px;
 }
 
 /* 左右雙欄主區域 */
@@ -111,16 +114,16 @@ body {
 
 /* 左側目標色塊與右側玩家色塊：尺寸完全對稱（175x175） */
 .target-swatch-box {
-  width: 175px;
-  height: 175px;
+  width: 200px;
+  height: 200px;
   border: 5px solid #3b1e10;
   transition: background-color 0.3s ease;
 }
 
 .player-swatch-wrapper {
   position: relative;
-  width: 175px;
-  height: 175px;
+  width: 200px;
+  height: 200px;
   border: 5px dashed #5a2d18;
   cursor: pointer;
   display: flex;
@@ -338,7 +341,7 @@ body {
   font-family: "YeZhaoFei12", sans-serif;
   font-size: 18px;
   font-weight: bold;
-  letter-spacing: 2px;
+  letter-spacing: 5px;
   cursor: pointer;
 }
 
@@ -360,7 +363,7 @@ body {
 .result-popup {
   background: #fffdf5;
   border: 6px solid #ffd23f;
-  box-shadow: 0 0 0 6px #5a2d18;
+  box-shadow: 0 0 0 6px #5a2729;
   padding: 36px 50px;
   text-align: center;
   animation: popScale 0.25s ease-out;
@@ -412,7 +415,7 @@ body {
 .intro-pixel-box {
   width: min(86vw, 680px);
   background: #fffdf5;
-  border: 6px solid #5a2d18;
+  border: 6px solid #5a2729;
   box-shadow:
     inset 0 0 0 3px #d49b27,
     0 16px 40px rgba(0, 0, 0, 0.9);
@@ -423,20 +426,20 @@ body {
 
 .intro-badge {
   display: inline-block;
-  background: #0b4be2;
+  background: #3b1e10;
   color: #ffd23f;
   border: 3px solid #ffd23f;
   padding: 6px 20px;
   font-size: clamp(16px, 1.6vw, 20px);
   font-weight: bold;
-  letter-spacing: 3px;
+  letter-spacing: 5px;
   margin-bottom: 14px;
 }
 
 .intro-title {
   font-size: clamp(24px, 2.6vw, 34px);
   color: #d6362e;
-  letter-spacing: 4px;
+  letter-spacing: 5px;
   margin-bottom: 20px;
   text-shadow: 2px 2px 0 #f3d999;
 }
@@ -464,7 +467,7 @@ body {
   color: #ffffff;
   border: 4px solid #1b5e36;
   box-shadow: 0 6px 0 #124024;
-  padding: 14px 44px;
+  padding: 10px 44px;
   font-family: "YeZhaoFei12", sans-serif;
   font-size: clamp(18px, 2vw, 24px);
   font-weight: bold;
@@ -481,4 +484,171 @@ body {
 .intro-start-btn:active {
   transform: translateY(3px);
   box-shadow: 0 2px 0 #124024;
+}
+/* =========================================
+   自訂復古像素鼠標（32x32 px 透明底 PNG）
+   ========================================= */
+
+/* 1. 全域預設鼠標（後面的 0 0 代表點擊熱點在圖片左上角尖端，auto 是備援預設箭頭） */
+html,
+body {
+  cursor:
+    url("../img/小裝飾/鼠標圖.png") 0 0,
+    auto !important;
+}
+
+/* 2. 移到所有按鈕、選項、卡片、色塊上的「可點擊手勢鼠標」 */
+a,
+button,
+input[type="button"],
+input[type="submit"],
+.option-item,
+.font-sample-card,
+.font-drop-slot,
+.player-swatch-wrapper,
+.avatar-wrapper,
+.hover-zoom,
+.img-btn,
+.fail-img-btn,
+.close-explain-btn {
+  cursor:
+    url("../img/小裝飾/鼠標圖.png") 8 0,
+    pointer !important;
+}
+/* =====================================================================
+   04 色彩題最終精修版：夾板原比例 + 頂部短標題列 + 寬間距不擋檢色器 + 底部雙框
+   ===================================================================== */
+
+/* 1. 頂部藍色標題列縮短寬度並置中，比例更精緻 */
+.stage-header {
+  width: 100% !important; /* 縮短寬度（原本 100% 太長） */
+  max-width: 1000px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding: 10px 28px !important;
+}
+
+/* 2. 左右兩個夾板往兩側拉開距離，中間留出充足空間給檢色器彈窗（不遮擋色塊） */
+.color-arena {
+  width: 150% !important;
+  height: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 150px !important; /* 拉開左右夾板間距，讓中間檢色器打開時完全不擋到左右色塊！ */
+  margin-top: 16px !important;
+}
+
+/* 3. 夾板框維持 100% 原始比例不變形 */
+.left-question-panel,
+.right-picker-panel {
+  flex: none !important;
+  height: 105% !important;
+  width: auto !important;
+  aspect-ratio: 860 / 1000 !important;
+  background-color: transparent !important;
+  background-image: url("../img/題目/夾板框.png") !important;
+  background-size: contain !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 54px 24px 26px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
+/* 4. 「題目目標色」與「你的調色盤」純白字精準置中在紅色夾子正中央 */
+.left-question-panel .panel-tag,
+.right-picker-panel .panel-tag {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  text-shadow: 2px 2px 0 #7a1010 !important;
+  color: #ffffff !important;
+  font-size: clamp(16px, 1.5vw, 22px) !important;
+  font-weight: bold !important;
+  padding: 0 !important;
+  margin-top: -26px !important; /* 精準垂直置中於紅色夾子正中央 */
+  letter-spacing: 15px !important;
+  line-height: 1 !important;
+}
+
+/* 5. 中間題目文字與色塊 */
+.question-desc {
+  width: 94% !important;
+  height: 58px !important;
+  margin-top: 8px !important;
+  font-size: clamp(15px, 1.35vw, 20x) !important;
+  line-height: 1.45 !important;
+  letter-spacing: 2px !important;
+  color: #3b1e10 !important;
+}
+
+.target-swatch-box,
+.player-swatch-wrapper {
+  width: 200px !important;
+  height: 200px !important;
+  margin-top: -2px !important; /* 👈 負數越大（例如 -14px、-18px）色塊越往上移 */
+  margin-bottom: 12px !important; /* 底部留出對稱空間，不壓到「達標門檻」與「目前色碼」 */
+}
+
+/* 6. 底部「達標門檻」與「目前色碼」加上一模一樣的復古米白金邊小方框 */
+.hint-note,
+.hex-readout {
+  background: #fffdf5 !important;
+  color: #3b1e10 !important;
+  border: 3px solid #5a2d18 !important;
+  box-shadow:
+    inset 0 0 0 2px #d49b27,
+    0 3px 0 #3b1e10 !important;
+  padding: 4px 16px !important;
+  height: 36px !important;
+  font-size: clamp(13px, 1.25vw, 16px) !important;
+  font-weight: bold !important;
+  letter-spacing: 2px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-bottom: 15px !important;
+}
+
+/* 7. 檢色器彈窗稍微緊湊一點，配合中間 280px 通道完全不遮擋左右色塊 */
+.picker-dialog {
+  transform: scale(0.92);
+}
+/* 1. 頂部標題列加長（跟左右兩張夾板的外緣對齊） */
+.stage-header {
+  width: 96% !important;
+  max-width: 1120px !important; /* 放寬上限，視覺氣勢更完整 */
+}
+
+/* 2. 「題目目標色」與「你的調色盤」與紅色夾子正置中（調 margin-top 即可微調高低） */
+.left-question-panel .panel-tag,
+.right-picker-panel .panel-tag {
+  margin-top: -20px !important; /* 👈 就是調這個數字！越負越往上、越正越往下 */
+  padding-left: 15px !important; /* 抵銷 letter-spacing 造成的微幅偏左，達成左右正置中 */
+  letter-spacing: 5px !important;
+}
+
+/* 3. 中間題目說明文字（.question-desc）加上復古米白金邊小框，左右對稱更有質感 */
+.question-desc {
+  width: 82% !important;
+  height: 80px !important;
+  margin-top: 15px !important;
+  padding: 6px 12px !important;
+  background: #fffdf5 !important;
+  border: 7px solid #5a2d18 !important;
+  font-size: clamp(16px, 1.3vw, 19px) !important;
+  line-height: 1.4 !important;
+  letter-spacing: 4px !important;
+  color: #3b1e10 !important;
+}
+.game-container {
+  /* 👇 把這裡的檔名改回你們第二關（04）原本的背景圖路徑即可！ */
+  background-image: url("../img/背景/03的背景.png") !important;
+  background-size: cover !important;
+  background-position: center !important;
 }

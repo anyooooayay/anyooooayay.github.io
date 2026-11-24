@@ -286,3 +286,34 @@ body.zoom-enter .button-img {
 img {
   image-rendering: pixelated; /* 讓所有像素圖在高解析度螢幕上保持銳利顆粒感！ */
 }
+
+/* =========================================
+   自訂復古像素鼠標（32x32 px 透明底 PNG）
+   ========================================= */
+
+/* 1. 全域預設鼠標（後面的 0 0 代表點擊熱點在圖片左上角尖端，auto 是備援預設箭頭） */
+html,
+body {
+  cursor:
+    url("../img/小裝飾/滑鼠鼠.png") 0 0,
+    auto !important;
+}
+
+/* 2. 移到所有按鈕、選項、卡片、色塊上的「可點擊手勢鼠標」 */
+a,
+button,
+input[type="button"],
+input[type="submit"],
+.option-item,
+.font-sample-card,
+.font-drop-slot,
+.player-swatch-wrapper,
+.avatar-wrapper,
+.hover-zoom,
+.img-btn,
+.fail-img-btn,
+.close-explain-btn {
+  cursor:
+    url("../img/小裝飾/滑鼠鼠.png") 8 0,
+    pointer !important;
+}
