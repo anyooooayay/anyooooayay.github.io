@@ -205,13 +205,14 @@
     <!-- 2. 右上角全站通用音樂開關 -->
     <button id="global-bgm-btn" title="開關背景音樂">🔊</button>
 
-    <!-- 3. 16:9 等比縮放遊戲畫面視窗 -->
-    <iframe
-      id="game-frame"
-      src="0102/01.html"
-      allow="camera *; microphone *; autoplay"
-    ></iframe>
-
+    <!-- 用固定視窗外框包住遊戲，讓外層 body 可以往上滑收起 Safari 網址列 -->
+    <div id="stage-wrapper">
+      <iframe
+        id="game-frame"
+        src="0102/01.html"
+        allow="camera *; microphone *; autoplay"
+      ></iframe>
+    </div>
     <!-- 4. 復古 CRT 螢幕掃描線＋暗角濾鏡 -->
     <div class="crt-overlay"></div>
 
@@ -233,7 +234,7 @@
       const gameFrame = document.getElementById("game-frame");
       bgm.volume = 0.3;
 
-      // 核心：依目前手機/平板/電腦視窗大小自動等比縮放 16:9 畫布（零跑版）
+      // 核心：依目前手機/平板/電腦真實可視視窗大小自動等比縮放（網址列收起會自動放大）
       function fitGameStage() {
         if (!gameFrame) return;
 
@@ -243,13 +244,17 @@
           return;
         }
 
-        // 手機／平板版（寬度 <= 1024px）：自動等比縮放並預留邊框厚度
+        // 優先讀取手機真實可視區域寬高（Safari 網址列往上滑收起後會立刻變大）
+        const viewW = window.visualViewport
+          ? window.visualViewport.width
+          : window.innerWidth;
+        const viewH = window.visualViewport
+          ? window.visualViewport.height
+          : window.innerHeight;
+
         const baseW = 1464;
         const baseH = 834;
-        const scale = Math.min(
-          window.innerWidth / baseW,
-          window.innerHeight / baseH,
-        );
+        const scale = Math.min(viewW / baseW, viewH / baseH);
         gameFrame.style.transform = `scale(${scale})`;
       }
 
@@ -303,7 +308,7 @@
           gameFrame.contentWindow.document.body.addEventListener(
             "click",
             () => {
-              requestMobileFullscreen(); // 👈 點擊遊戲畫面內部也能觸發全螢幕
+              requestMobileFullscreen();
               if (!isMusicStarted) {
                 tryAutoPlay();
               }
