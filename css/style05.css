@@ -435,7 +435,7 @@ body {
 .cert-char {
   position: absolute;
   top: 43%;
-  left: 52.5%;
+  left: 54%;
   width: 9.5%;
   height: auto;
   image-rendering: pixelated;
@@ -1117,4 +1117,27 @@ input[type="submit"],
   align-items: center !important;
   z-index: 999 !important;
   pointer-events: none !important;
+}
+
+/* =====================================================================
+   通關獎狀 ＆ 失敗居留證：拍照 / 重拍按鈕共用同一組座標與大小
+   ===================================================================== */
+#snap-btn,
+#retake-btn,
+#fail-snap-btn,
+#fail-retake-btn {
+  top: 101.5% !important;
+  left: 68% !important;
+  width: 4.5% !important;
+  z-index: 30 !important;
+  cursor: pointer !important;
+}
+/* =====================================================================
+   成功自拍框：調整位置大小 ＋ 即時黑白高對比復古證件照濾鏡
+   ===================================================================== */
+.camera-box {
+  top: 37% !important; /* 👈 數字越小越往上移，數字越大越往下移 */
+  left: 67% !important; /* 👈 數字越小越往左移，數字越大越往右移 */
+  width: 17% !important; /* 👈 調整拍攝框寬度 */
+  height: 38% !important; /* 👈 調整拍攝框高度 */
 }

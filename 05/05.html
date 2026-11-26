@@ -177,17 +177,13 @@
           alt="通關角色"
         />
 
-        <!-- 👇 必須放在 certificate-capture-area 的「裡面」！ -->
+        <!-- 👇 只保留這一個有 muted 的 camera-box，把下面重複的那一個刪掉！ -->
         <div class="camera-box">
           <video id="player-webcam" autoplay playsinline muted></video>
           <canvas id="photo-canvas" style="display: none"></canvas>
           <div id="win-cam-countdown" class="cam-countdown-overlay"></div>
         </div>
 
-        <div class="camera-box">
-          <video id="player-webcam" autoplay playsinline></video>
-          <canvas id="photo-canvas" style="display: none"></canvas>
-        </div>
         <img src="../img/結算/皇冠.png" class="cert-crown" alt="皇冠" />
 
         <button id="snap-btn" class="img-btn snap-pos" onclick="takeSnapshot()">
@@ -245,7 +241,7 @@
         />
 
         <div class="camera-box">
-          <video id="fail-webcam" autoplay playsinline></video>
+          <video id="fail-webcam" autoplay playsinline muted></video>
           <canvas id="fail-photo-canvas" style="display: none"></canvas>
         </div>
         <img src="../img/結算/膠帶.png" class="fail-tape-deco" alt="膠帶裝飾" />
@@ -705,7 +701,7 @@
       let webcamStream = null;
       let isCountingSnap = false; // 防止倒數期間重複連點按鈕
 
-      // 1. 通關獎狀：一進入頁面立刻開啟即時鏡頭預覽
+      // 通關獎狀：開啟鏡頭即時預覽（修正無畫面問題）
       function startWebcam() {
         const video = document.getElementById("player-webcam");
         const canvas = document.getElementById("photo-canvas");
@@ -720,9 +716,12 @@
             .then((stream) => {
               webcamStream = stream;
               video.srcObject = stream;
-              video.play().catch(() => {});
+              video.muted = true; // 確保靜音以符合瀏覽器自動預覽政策
+              video.play().catch((e) => console.warn("預覽播放提醒：", e));
             })
-            .catch(() => {});
+            .catch((err) => {
+              console.error("通關獎狀鏡頭開啟失敗：", err);
+            });
         }
       }
 
@@ -1076,15 +1075,15 @@
         const textItems = [
           {
             el: scoreEl,
-            offsetX: -0.015, // 左右位置微調（負數往左、正數往右）
-            offsetY: -0.001, // 上下位置微調（負數往上、正數往下）
-            letterSpacing: "2px", // 分數保持預設字距
+            // 格式：isFail ? 失敗居留證數值(已調好不動) : 通關成功獎狀數值(改這裡)
+            offsetX: isFail ? -0.015 : -0.012, // 👈 改冒號後面的數字，單獨調「成功獎狀」題數左右（負數往左、正數往右）
+            offsetY: isFail ? -0.001 : -0.001, // 👈 改冒號後面的數字，單獨調「成功獎狀」題數上下（負數往上、正數往下）
+            letterSpacing: "2px",
           },
           {
             el: nameEl,
-            offsetX: -0.015,
-            offsetY: -0.0002,
-            // 👇 調整這裡的數字就能改變名字字距（例如 "5px"、"12px"，負數如 "-2px" 則變緊）
+            offsetX: isFail ? -0.015 : -0.015, // 👈 改冒號後面的數字，單獨調「成功獎狀」名字左右
+            offsetY: isFail ? -0.0002 : -0.0001, // 👈 改冒號後面的數字，單獨調「成功獎狀」名字上下
             letterSpacing: "3px",
           },
         ];
