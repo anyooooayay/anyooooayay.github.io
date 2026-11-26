@@ -303,6 +303,7 @@
           gameFrame.contentWindow.document.body.addEventListener(
             "click",
             () => {
+              requestMobileFullscreen(); // 👈 點擊遊戲畫面內部也能觸發全螢幕
               if (!isMusicStarted) {
                 tryAutoPlay();
               }
