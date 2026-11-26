@@ -899,58 +899,47 @@
           }
         }
 
-        // 畫上角色圖與裝飾（皇冠或膠帶）
-        const charImg = document.getElementById(
-          isFail ? "fail-char-img" : "cert-char-img",
-        );
-        const decoImg = document.querySelector(
-          `#${captureElementId} ${isFail ? ".fail-tape-deco" : ".cert-crown"}`,
-        );
-        [charImg, decoImg].forEach((imgEl) => {
-          if (
-            imgEl &&
-            imgEl.complete &&
-            imgEl.naturalWidth > 0 &&
-            containerRect.width > 0
-          ) {
-            const r = imgEl.getBoundingClientRect();
-            const ix =
-              ((r.left - containerRect.left) / containerRect.width) * w;
-            const iy = ((r.top - containerRect.top) / containerRect.height) * h;
-            const iw = (r.width / containerRect.width) * w;
-            const ih = (r.height / containerRect.height) * h;
-            ctx.drawImage(imgEl, ix, iy, iw, ih);
-          }
-        });
-
-        // 畫上玩家名字與總分（自動判斷 CSS 是靠左或置中，100% 還原網頁畫面位置不跑位）
+        // 畫上玩家名字與總分（含匯出圖片專用微調座標，可自由調整到一像素不差）
         const nameEl = document.getElementById(
           isFail ? "fail-player-name" : "cert-player-name",
         );
         const scoreEl = document.getElementById(
           isFail ? "fail-score-display" : "cert-score-display",
         );
-        [nameEl, scoreEl].forEach((txtEl) => {
+
+        const textItems = [
+          {
+            el: scoreEl,
+            // 👇 分數（3/14）微調：往左移一點點（-0.015），避開右邊的「題」字！
+            offsetX: -0.01, // 負數＝往左移，正數＝往右移
+            offsetY: -0.002, // 負數＝往上移，正數＝往下移
+          },
+          {
+            el: nameEl,
+            // 👇 名字（Guang-Dah Chen）微調：往上提一點點，與左邊文字完全水平對齊！
+            offsetX: -0.02, // 負數＝往左移，正數＝往右移
+            offsetY: -0.002, // 負數＝往上移，正數＝往下移
+          },
+        ];
+
+        textItems.forEach(({ el: txtEl, offsetX, offsetY }) => {
           if (txtEl && containerRect.width > 0) {
             const r = txtEl.getBoundingClientRect();
             const style = getComputedStyle(txtEl);
 
-            // 1. 判斷原本 CSS 的水平對齊方式（如果是 center 就取中心點，否則取最左邊起點 r.left）
             const align = style.textAlign === "center" ? "center" : "left";
-            const drawX =
+            const baseX =
               align === "center"
-                ? ((r.left + r.width / 2 - containerRect.left) /
-                    containerRect.width) *
-                  w
-                : ((r.left - containerRect.left) / containerRect.width) * w;
+                ? (r.left + r.width / 2 - containerRect.left) /
+                  containerRect.width
+                : (r.left - containerRect.left) / containerRect.width;
+            const baseY =
+              (r.top + r.height / 2 - containerRect.top) / containerRect.height;
 
-            // 2. 垂直方向取文字框正中央，並微調 2% 補償像素字體基線
-            const drawY =
-              ((r.top + r.height / 2 - containerRect.top) /
-                containerRect.height) *
-              h;
+            // 套用百分比微調偏移量
+            const drawX = (baseX + offsetX) * w;
+            const drawY = (baseY + offsetY) * h;
 
-            // 3. 完整繼承原本 CSS 的字體大小、粗細與像素字型
             const fontSize = Math.round(
               (parseFloat(style.fontSize) / containerRect.width) * w,
             );

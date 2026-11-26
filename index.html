@@ -11,6 +11,15 @@
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="icon" type="image/png" href="img/小裝飾/Iconeye1.png" />
 
+    <!-- 👇 加在這裡：讓 iPhone / iPad「加入主畫面」後 100% 滿版無網址列開啟 -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="勇闖視傳系" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="apple-touch-icon" href="img/小裝飾/Iconeye1.png" />
     <style>
       /* =====================================================================
          手機／平板直立提示遮罩（偵測為直式時自動蓋住畫面提醒打橫）
@@ -249,6 +258,27 @@
         setTimeout(fitGameStage, 120);
       });
       fitGameStage();
+
+      // 手機點擊畫面時，自動嘗試請求瀏覽器全螢幕（Android Chrome 立刻隱藏網址列）
+      function requestMobileFullscreen() {
+        const docEl = document.documentElement;
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+          if (docEl.requestFullscreen) {
+            docEl.requestFullscreen().catch(() => {});
+          } else if (docEl.webkitRequestFullscreen) {
+            docEl.webkitRequestFullscreen().catch(() => {});
+          }
+        }
+      }
+
+      document.addEventListener("click", requestMobileFullscreen, {
+        once: true,
+      });
+
+      // 同時監聽手機網址列收合時的視覺高度變化，即時把遊戲放到最大
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", fitGameStage);
+      }
 
       let isMusicStarted = false;
 
