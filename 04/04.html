@@ -2,7 +2,11 @@
 <html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+
     <title>勇闖視傳系</title>
     <link rel="stylesheet" href="../css/style04.css" />
     <link rel="icon" type="image/png" href="../img/小裝飾/Iconeye1.png" />
@@ -10,6 +14,16 @@
   <body>
     <!-- 共用點擊音效 -->
     <audio id="sfx-click" src="../sound/按鈕聲.wav" preload="auto"></audio>
+
+    <audio
+      id="stage2-bgm"
+      src="../sound/04背景音樂.mp3"
+      loop
+      preload="auto"
+    ></audio>
+
+    <audio id="sfx-correct" src="../sound/correct.mp3" preload="auto"></audio>
+    <audio id="sfx-wrong" src="../sound/wrong.wav" preload="auto"></audio>
 
     <!-- 第二關：關卡說明彈窗（一進畫面先顯示） -->
     <div id="color-intro-modal" class="intro-modal-overlay">
@@ -107,6 +121,13 @@
         <div id="sim-detail-text" class="sim-msg">太神啦！精準命中目標色！</div>
       </div>
     </div>
+
+    <!-- 自訂零閃爍跟隨滴管鼠標 -->
+    <img
+      id="custom-dropper-cursor"
+      src="../img/小裝飾/鼠標圖.png"
+      alt="滴管鼠標"
+    />
     <script>
       // 3 道設計主題色票題目（已更新為你要的新色票）
       const colorQuestions = [
@@ -155,11 +176,17 @@
       const stageScoreDisplay = document.getElementById("stage-score-display");
       const sfxClick = document.getElementById("sfx-click");
 
-      // 點擊「開始校色 READY」關閉關卡說明彈窗
+      const stage2Bgm = document.getElementById("stage2-bgm");
+      if (stage2Bgm) stage2Bgm.volume = 0.3; // 音量設 0.3，柔和陪襯不蓋過音效
+
+      // 點擊「開始校色 READY」關閉關卡說明彈窗並啟動第二關背景音樂
       function startColorStage() {
         if (sfxClick) {
           sfxClick.currentTime = 0;
           sfxClick.play().catch(() => {});
+        }
+        if (stage2Bgm) {
+          stage2Bgm.play().catch(() => {});
         }
         const introModal = document.getElementById("color-intro-modal");
         if (introModal) introModal.style.display = "none";
@@ -407,18 +434,28 @@
       function checkColorAnswer() {
         if (isLocked) return;
         isLocked = true;
-        if (sfxClick) {
-          sfxClick.currentTime = 0;
-          sfxClick.play().catch(() => {});
-        }
 
         const targetHex = colorQuestions[currentQ].targetHex;
         const similarity = calculateSimilarity(targetHex, currentPickedHex);
-        const isPass = similarity >= 80;
+        const isPass = similarity >= 85; // 達 85% 以上才算過關
+
+        const sfxCorrect = document.getElementById("sfx-correct");
+        const sfxWrong = document.getElementById("sfx-wrong");
 
         if (isPass) {
           colorScore++;
           stageScoreDisplay.textContent = `本關得分：${colorScore}`;
+          if (sfxCorrect) {
+            sfxCorrect.volume = 0.75;
+            sfxCorrect.currentTime = 0;
+            sfxCorrect.play().catch(() => {});
+          }
+        } else {
+          if (sfxWrong) {
+            sfxWrong.volume = 0.7;
+            sfxWrong.currentTime = 0;
+            sfxWrong.play().catch(() => {});
+          }
         }
 
         const overlay = document.getElementById("similarity-overlay");
@@ -444,6 +481,37 @@
           }
         }, 2000);
       }
+
+      // =====================================================================
+      // 零延遲跟隨滴管鼠標控制
+      // =====================================================================
+      const dropperCursor = document.getElementById("custom-dropper-cursor");
+
+      // 尖端偏移補償（圖片寬 36px 時，左下玻璃尖端距離左上角約 X: 6px, Y: 33px）
+      const tipOffsetX = 6;
+      const tipOffsetY = 33;
+      0;
+      document.addEventListener("mousemove", (e) => {
+        if (!dropperCursor) return;
+        dropperCursor.style.transform = `translate3d(${e.clientX - tipOffsetX}px, ${e.clientY - tipOffsetY}px, 0)`;
+      });
+
+      document.addEventListener("mousedown", () => {
+        if (dropperCursor) dropperCursor.classList.add("is-clicking");
+      });
+
+      document.addEventListener("mouseup", () => {
+        if (dropperCursor) dropperCursor.classList.remove("is-clicking");
+      });
+
+      // 滑鼠移出視窗時暫時隱藏，避免停留在邊緣
+      document.addEventListener("mouseleave", () => {
+        if (dropperCursor) dropperCursor.style.opacity = "0";
+      });
+
+      document.addEventListener("mouseenter", () => {
+        if (dropperCursor) dropperCursor.style.opacity = "1";
+      });
 
       loadColorQuestion();
     </script>

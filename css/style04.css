@@ -1,3 +1,13 @@
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  touch-action: manipulation; /* 消除手機點擊 300ms 延遲，並防止雙擊放大 */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 @font-face {
   font-family: "YeZhaoFei12";
   src: url("../fonts/yezhaofei12.ttf");
@@ -493,28 +503,10 @@ body {
 html,
 body {
   cursor:
-    url("../img/小裝飾/鼠標圖.png") 0 0,
+    url("../img/小裝飾/鼠標圖.png") 6 30,
     auto !important;
 }
 
-/* 2. 移到所有按鈕、選項、卡片、色塊上的「可點擊手勢鼠標」 */
-a,
-button,
-input[type="button"],
-input[type="submit"],
-.option-item,
-.font-sample-card,
-.font-drop-slot,
-.player-swatch-wrapper,
-.avatar-wrapper,
-.hover-zoom,
-.img-btn,
-.fail-img-btn,
-.close-explain-btn {
-  cursor:
-    url("../img/小裝飾/鼠標圖.png") 8 0,
-    pointer !important;
-}
 /* =====================================================================
    04 色彩題最終精修版：夾板原比例 + 頂部短標題列 + 寬間距不擋檢色器 + 底部雙框
    ===================================================================== */
@@ -651,4 +643,79 @@ input[type="submit"],
   background-image: url("../img/背景/03的背景.png") !important;
   background-size: cover !important;
   background-position: center !important;
+}
+/* =====================================================================
+   徹底消除滴管鼠標經過按鈕時閃回預設箭頭的 Bug
+   ===================================================================== */
+html,
+body,
+body *,
+button,
+button:hover,
+button *,
+a,
+a:hover,
+a *,
+.player-swatch-wrapper,
+.player-swatch-wrapper:hover,
+.action-pixel-btn,
+.action-pixel-btn:hover {
+  cursor:
+    url("../img/小裝飾/鼠標圖.png") 6 30,
+    crosshair !important;
+}
+/* =====================================================================
+   徹底鎖死滴管鼠標：包含滑過(:hover)、點下去瞬間(:active)、聚焦(:focus)
+   ===================================================================== */
+html,
+body,
+body *,
+body *:hover,
+body *:active,
+body *:focus,
+body *::before,
+body *::after {
+  cursor:
+    url("../img/小裝飾/鼠標圖.png") 6 30,
+    crosshair !important;
+}
+
+/* 讓按鈕裡面的圖片或文字不單獨搶奪滑鼠感應，減少重繪閃爍 */
+button img,
+.img-btn img,
+.action-pixel-btn img {
+  pointer-events: none;
+}
+/* =====================================================================
+   終極零閃爍滴管游標：隱藏原生鼠標 + 獨立圖片精準跟隨
+   ===================================================================== */
+
+/* 1. 徹底隱藏所有狀態（包含滑過、按住、拖曳）的系統原生鼠標 */
+html,
+body,
+body *,
+body *:hover,
+body *:active,
+body *:focus,
+body *::before,
+body *::after {
+  cursor: none !important;
+}
+
+#custom-dropper-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 36px;
+  height: auto;
+  pointer-events: none;
+  z-index: 999999;
+  /* 👇 關鍵：把縮放與旋轉軸心鎖死在「左下玻璃尖端 (6px 33px)」，點擊時尖端一像素都不會偏移！ */
+  transform-origin: 6px 33px;
+  transform: translate3d(-10px, -10px, 0);
+  will-change: transform;
+  image-rendering: pixelated;
+  transition:
+    scale 0.01s ease,
+    rotate 0.01s ease;
 }

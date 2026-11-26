@@ -1,3 +1,13 @@
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  touch-action: manipulation; /* 消除手機點擊 300ms 延遲，並防止雙擊放大 */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 body {
   margin: 0;
   padding: 0;

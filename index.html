@@ -2,38 +2,146 @@
 <html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+
     <title>勇闖視傳系</title>
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="icon" type="image/png" href="img/小裝飾/Iconeye1.png" />
+
     <style>
-      img {
-        image-rendering: pixelated; /* 讓所有像素圖在高解析度螢幕上保持銳利顆粒感！ */
+      /* =====================================================================
+         手機／平板直立提示遮罩（偵測為直式時自動蓋住畫面提醒打橫）
+         ===================================================================== */
+      #rotate-device-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(11, 14, 23, 0.96);
+        z-index: 100000; /* 蓋在所有遊戲與 CRT 濾鏡最上方 */
+        justify-content: center;
+        align-items: center;
+        padding: 24px;
+        text-align: center;
       }
+
+      /* 只要裝置處於直式（portrait）且非桌機大螢幕，立刻顯示提示 */
+      @media screen and (orientation: portrait) and (max-width: 1024px) {
+        #rotate-device-overlay {
+          display: flex !important;
+        }
+      }
+
+      .rotate-pixel-box {
+        background: #fffdf5;
+        border: 4px solid #3b1e10;
+        box-shadow:
+          inset 4px 4px 0 #ffffff,
+          inset -4px -4px 0 #d4c4a8,
+          0 0 0 4px #ffd23f,
+          0 0 0 8px #002376,
+          0 16px 36px rgba(0, 0, 0, 0.9);
+        padding: 32px 28px;
+        max-width: 360px;
+        width: 90%;
+      }
+
+      .rotate-icon {
+        font-size: 42px;
+        margin-bottom: 12px;
+        animation: tiltPhone 1.5s ease-in-out infinite;
+      }
+
+      @keyframes tiltPhone {
+        0%,
+        100% {
+          transform: rotate(0deg);
+        }
+        50% {
+          transform: rotate(-90deg);
+        }
+      }
+
+      .rotate-title {
+        color: #002376;
+        font-size: 20px;
+        margin: 0 0 10px 0;
+        letter-spacing: 2px;
+      }
+
+      .rotate-desc {
+        color: #5a2d18;
+        font-size: 14px;
+        line-height: 1.6;
+        margin: 0;
+      }
+
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
       }
-      body,
-      html {
+      html,
+      body {
         width: 100%;
-        height: 100%;
+        height: 100dvh;
         overflow: hidden;
         background-color: #000;
+        touch-action: manipulation;
+        -webkit-user-select: none;
+        user-select: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor:
+          url("img/小裝飾/滑鼠鼠.png") 0 0,
+          auto !important;
       }
-      /* 滿版遊戲畫面視窗 */
+
+      /* 筆電／桌機預設：維持原本 100% 滿版無邊框 */
       #game-frame {
         width: 100vw;
         height: 100vh;
         border: none;
         display: block;
+        flex-shrink: 0;
+        transform-origin: center center;
       }
+
+      /* 手機／平板（螢幕寬度 <= 1024px）：自動切換為深藍像素網格 ＋ 金黃復古邊框 */
+      @media screen and (max-width: 1024px) {
+        html,
+        body {
+          background-color: #071330;
+          background-image:
+            linear-gradient(rgba(255, 210, 63, 0.06) 1px, transparent 1px),
+            linear-gradient(
+              90deg,
+              rgba(255, 210, 63, 0.06) 1px,
+              transparent 1px
+            );
+          background-size: 24px 24px;
+        }
+
+        #game-frame {
+          width: 1440px;
+          height: 810px;
+          border: 6px solid #ffd23f;
+          border-radius: 14px;
+          box-shadow:
+            0 0 0 6px #002376,
+            0 0 50px rgba(0, 140, 255, 0.35),
+            0 20px 60px rgba(0, 0, 0, 0.85);
+        }
+      }
+
       /* 右上角常駐的像素音樂開關按鈕 */
       #global-bgm-btn {
         position: fixed;
-        top: 20px;
-        right: 20px;
+        top: 16px;
+        right: 16px;
         z-index: 9999;
         width: 46px;
         height: 46px;
@@ -43,6 +151,7 @@
         justify-content: center;
         align-items: center;
       }
+
       /* 覆蓋在最上層的復古像素螢幕濾鏡（不影響任何按鈕點擊） */
       .crt-overlay {
         position: fixed;
@@ -50,30 +159,17 @@
         left: 0;
         width: 100vw;
         height: 100vh;
-        pointer-events: none; /* 關鍵：讓滑鼠完全穿透，不擋住任何按鈕！ */
+        pointer-events: none;
         z-index: 99999;
-        /* 1. 極細的橫向像素掃描線 */
         background: linear-gradient(
           rgba(18, 16, 16, 0) 50%,
           rgba(0, 0, 0, 0.12) 50%
         );
         background-size: 100% 4px;
-        /* 2. 四周微暗角，把視覺焦點集中在螢幕中央 */
         box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.35);
       }
-      /* =========================================
-   自訂復古像素鼠標（32x32 px 透明底 PNG）
-   ========================================= */
 
-      /* 1. 全域預設鼠標（後面的 0 0 代表點擊熱點在圖片左上角尖端，auto 是備援預設箭頭） */
-      html,
-      body {
-        cursor:
-          url("img/小裝飾/滑鼠鼠.png") 0 0,
-          auto !important;
-      }
-
-      /* 2. 移到所有按鈕、選項、卡片、色塊上的「可點擊手勢鼠標」 */
+      /* 可點擊手勢鼠標 */
       a,
       button,
       input[type="button"],
@@ -100,17 +196,59 @@
     <!-- 2. 右上角全站通用音樂開關 -->
     <button id="global-bgm-btn" title="開關背景音樂">🔊</button>
 
-    <!-- 3. 滿版遊戲畫面視窗（只保留這一個，並加上 allow="camera *" 允許內部開啟相機） -->
-    <iframe id="game-frame" src="0102/01.html" allow="camera *"></iframe>
+    <!-- 3. 16:9 等比縮放遊戲畫面視窗 -->
+    <iframe
+      id="game-frame"
+      src="0102/01.html"
+      allow="camera *; microphone *; autoplay"
+    ></iframe>
 
     <!-- 4. 復古 CRT 螢幕掃描線＋暗角濾鏡 -->
     <div class="crt-overlay"></div>
+
+    <!-- 手機／平板直立時自動顯示的「請轉為橫式」復古提示遮罩 -->
+    <div id="rotate-device-overlay">
+      <div class="rotate-pixel-box">
+        <div class="rotate-icon">📱 ➔ 📲</div>
+        <h2 class="rotate-title">請將手機／平板轉為橫式</h2>
+        <p class="rotate-desc">
+          為獲得最佳像素視覺與操作體驗，<br />
+          請將裝置橫放（Landscape）開始闖關！
+        </p>
+      </div>
+    </div>
 
     <script>
       const bgm = document.getElementById("global-bgm");
       const bgmBtn = document.getElementById("global-bgm-btn");
       const gameFrame = document.getElementById("game-frame");
       bgm.volume = 0.3;
+
+      // 核心：依目前手機/平板/電腦視窗大小自動等比縮放 16:9 畫布（零跑版）
+      function fitGameStage() {
+        if (!gameFrame) return;
+
+        // 筆電／桌機版（寬度 > 1024px）：維持原本滿版，不套用縮放
+        if (window.innerWidth > 1024) {
+          gameFrame.style.transform = "none";
+          return;
+        }
+
+        // 手機／平板版（寬度 <= 1024px）：自動等比縮放並預留邊框厚度
+        const baseW = 1464;
+        const baseH = 834;
+        const scale = Math.min(
+          window.innerWidth / baseW,
+          window.innerHeight / baseH,
+        );
+        gameFrame.style.transform = `scale(${scale})`;
+      }
+
+      window.addEventListener("resize", fitGameStage);
+      window.addEventListener("orientationchange", () => {
+        setTimeout(fitGameStage, 120);
+      });
+      fitGameStage();
 
       let isMusicStarted = false;
 

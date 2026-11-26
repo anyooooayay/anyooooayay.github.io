@@ -2,7 +2,11 @@
 <html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+
     <title>勇闖視傳系</title>
     <link rel="stylesheet" href="../css/style03.css" />
     <link rel="icon" type="image/png" href="../img/小裝飾/Iconeye1.png" />
@@ -45,28 +49,30 @@
     <!-- 按鈕與倒數點擊音效 -->
     <audio id="sfx-click" src="../sound/按鈕聲.wav" preload="auto"></audio>
 
-    <!-- 答對與答錯音效 -->
-    <audio id="sfx-correct" src="../audio/correct.mp3" preload="auto"></audio>
-    <audio id="sfx-wrong" src="../audio/wrong.mp3" preload="auto"></audio>
+    <audio id="sfx-countdown" src="../sound/倒數321.mp3" preload="auto"></audio>
 
-    <!-- 倒數 3、2、1、START 遮罩（4張圖同時預載進記憶體，零延遲切換） -->
+    <!-- 答對與答錯音效 -->
+    <audio id="sfx-correct" src="../sound/correct.mp3" preload="auto"></audio>
+    <audio id="sfx-wrong" src="../sound/wrong.wav" preload="auto"></audio>
+
+    <!-- 倒數 3、2、1、START 遮罩 -->
     <div id="countdown-overlay" class="overlay" style="display: none">
-      <img src="../img/題目/倒數三.png" class="cd-step-img pop-anim" alt="3" />
+      <img src="../img/題目/倒數三.png" class="countdown-img" alt="3" />
       <img
         src="../img/題目/倒數二.png"
-        class="cd-step-img pop-anim"
+        class="countdown-img"
         style="display: none"
         alt="2"
       />
       <img
         src="../img/題目/倒數一.png"
-        class="cd-step-img pop-anim"
+        class="countdown-img"
         style="display: none"
         alt="1"
       />
       <img
         src="../img/題目/start.png"
-        class="cd-step-img pop-anim"
+        class="countdown-img"
         style="display: none"
         alt="START"
       />
@@ -174,9 +180,6 @@
           <button class="fail-img-btn" onclick="retryQuizOnly()">
             <img src="../img/結算/再玩一次按鈕.png" alt="再玩一次" />
           </button>
-          <button class="fail-img-btn" onclick="restartWholeGame()">
-            <img src="../img/結算/回到首頁按鈕.png" alt="回到首頁" />
-          </button>
         </div>
       </div>
     </div>
@@ -279,10 +282,24 @@
 
     <!-- JavaScript 遊戲邏輯 -->
     <script>
-      // 1. 五題完整題庫（已補齊第 1～5 題解答圖 explainImg）
+      // 通知外層 index.html 停止背景音樂
+      try {
+        const parentBgm = window.parent.document.getElementById("global-bgm");
+        const parentBgmBtn =
+          window.parent.document.getElementById("global-bgm-btn");
+        if (parentBgm) {
+          parentBgm.pause();
+          parentBgm.currentTime = 0;
+        }
+        if (parentBgmBtn) {
+          parentBgmBtn.textContent = "🔇";
+          parentBgmBtn.style.display = "none";
+        }
+      } catch (e) {}
+
+      // 1. 五題完整題庫
       const quizData = [
         {
-          // 第 1 題
           showStory: true,
           storyImg: "../img/情境框/題目一情境.png",
           picImg: "../img/題目/題目一左內.png",
@@ -297,7 +314,6 @@
           answer: 1,
         },
         {
-          // 第 2 題
           showStory: true,
           storyImg: "../img/情境框/題目二情境.png",
           picImg: "../img/題目/裸女.png",
@@ -308,11 +324,10 @@
             "../img/題目/題目二c.png",
             "../img/題目/題目二d.png",
           ],
-          explainImg: "../img/題目/題目二解答.png", // 👈 補上第 2 題解答圖
+          explainImg: "../img/題目/題目二解答.png",
           answer: 1,
         },
         {
-          // 第 3 題
           showStory: true,
           storyImg: "../img/情境框/題目三情境.png",
           clueImg: "../img/題目/題目三合成圖.png",
@@ -324,11 +339,10 @@
             "../img/題目/題目三c.png",
             "../img/題目/題目三d.png",
           ],
-          explainImg: "../img/題目/題目三解答.png", // 👈 補上第 3 題解答圖
+          explainImg: "../img/題目/題目三解答.png",
           answer: 1,
         },
         {
-          // 第 4 題
           showStory: true,
           storyImg: "../img/情境框/題目四情境.png",
           clueImg: "../img/題目/題目四合成圖.png",
@@ -340,11 +354,10 @@
             "../img/題目/題目四c.png",
             "../img/題目/題目四d.png",
           ],
-          explainImg: "../img/題目/題目四解答.png", // 👈 補上第 4 題解答圖
+          explainImg: "../img/題目/題目四解答.png",
           answer: 2,
         },
         {
-          // 第 5 題
           showStory: true,
           storyImg: "../img/情境框/題目五情境.png",
           clueImg: "../img/題目/題目五合成圖.png",
@@ -356,59 +369,67 @@
             "../img/題目/題目五c.png",
             "../img/題目/題目五d.png",
           ],
-          explainImg: "../img/題目/題目五解答.png", // 👈 補上第 5 題解答圖
+          explainImg: "../img/題目/題目五解答.png",
           answer: 3,
         },
       ];
 
-      // 2. 答對/答錯圖片路徑 & 遊戲狀態變數（補回這幾行，JS 就不會報錯中斷了！）
       const correctImgSrc = "../img/題目/答對.png";
       const wrongImgSrc = "../img/題目/答錯.png";
 
       let currentIndex = 0;
       let score = 0;
       let quizTimer = null;
+      let readyInterval = null;
       let isAnswering = false;
+      let isCountingDown = false;
+      let isBgmUnlocked = false;
 
-      // 3. 統一抓取所有 HTML 元素
       const storyModal = document.getElementById("story-modal");
       const storyPopupImg = document.getElementById("story-popup-img");
       const readyBtn = document.getElementById("ready-btn");
       const countdownOverlay = document.getElementById("countdown-overlay");
-      const countdownImg = document.getElementById("countdown-img");
-      const feedbackOverlay = document.getElementById("feedback-overlay");
-      const feedbackImg = document.getElementById("feedback-img");
       const timerImg = document.getElementById("timer-bar-img");
       const picImg = document.getElementById("pic-img");
       const questionImg = document.getElementById("question-img");
       const optionItems = document.querySelectorAll(".option-item");
       const clueImg = document.getElementById("clue-img");
+
       const quizBgm = document.getElementById("quiz-bgm");
-      let isBgmUnlocked = false;
       const sfxCorrect = document.getElementById("sfx-correct");
       const sfxWrong = document.getElementById("sfx-wrong");
+      const sfxClick = document.getElementById("sfx-click");
+      const sfxCountdown = document.getElementById("sfx-countdown");
 
-      // 黃金音量比例：背景音樂柔和陪襯 (0.3)，答題音效清脆明顯 (0.75)
       if (quizBgm) quizBgm.volume = 0.3;
       if (sfxCorrect) sfxCorrect.volume = 0.75;
       if (sfxWrong) sfxWrong.volume = 0.7;
-      const cdStepImgs = document.querySelectorAll(".cd-step-img");
+      if (sfxClick) sfxClick.volume = 0.65;
+      if (sfxCountdown) sfxCountdown.volume = 0.75;
 
-      // 4. 背景預載＋強制解碼所有圖片進記憶體（徹底消滅第一次切換卡頓）
+      function playClickSound() {
+        if (sfxClick) {
+          sfxClick.currentTime = 0;
+          sfxClick.play().catch(() => {});
+        }
+      }
+
+      function triggerPopAnimation(targetImg) {
+        if (!targetImg) return;
+        targetImg.classList.remove("pop-anim");
+        void targetImg.offsetWidth;
+        targetImg.classList.add("pop-anim");
+      }
+
+      // 預載所有圖片（不包含任何外部 DOM 陣列變數，絕不報錯）
       function preloadAllImages() {
-        // 優先強制解碼 4 張倒數圖
-        cdStepImgs.forEach((img) => {
-          if (img.decode) {
-            img.decode().catch(() => {});
-          }
-        });
-
         quizData.forEach((item) => {
           [
             item.storyImg,
             item.clueImg,
             item.picImg,
             item.questionImg,
+            item.explainImg,
             ...item.optionImgs,
           ].forEach((src) => {
             if (src) {
@@ -418,22 +439,16 @@
             }
           });
         });
-
         [correctImgSrc, wrongImgSrc].forEach((src) => {
           const im = new Image();
           im.src = src;
           if (im.decode) im.decode().catch(() => {});
         });
       }
-
-      // 第 5 區：載入當前題目
       function loadStage() {
         const data = quizData[currentIndex];
-
-        // 第 1～3 題沒設 clueImg，自動維持預設外框；第 4、5 題則換成合成大圖
         clueImg.src = data.clueImg || "../img/題目/圖片框.png";
 
-        // 有設內圖（第 1～3 題）就顯示；留空（第 4、5 題）就直接隱藏
         if (data.picImg) {
           picImg.src = data.picImg;
           picImg.style.display = "block";
@@ -461,11 +476,10 @@
         }
       }
 
-      /// 點擊 READY 按鈕
+      // 點擊 READY 按鈕
       readyBtn.addEventListener("click", () => {
         storyModal.style.display = "none";
 
-        // 先在點擊瞬間「靜音預熱」解鎖瀏覽器播放權限，等 321 結束再正式出聲
         if (quizBgm && !isBgmUnlocked) {
           quizBgm.muted = true;
           quizBgm
@@ -482,30 +496,15 @@
         startReadyCountdown();
       });
 
-      // 共用按鈕與倒數音效設定
-      const sfxClick = document.getElementById("sfx-click");
-      if (sfxClick) sfxClick.volume = 0.65;
-
-      function playClickSound() {
-        if (sfxClick) {
-          sfxClick.currentTime = 0;
-          sfxClick.play().catch(() => {});
-        }
-      }
-
-      // 自動幫所有可點擊的按鈕加上點擊音效
       document
-        .querySelectorAll("#ready-btn, .option-item, .pixel-action-btn")
+        .querySelectorAll(".option-item, .pixel-action-btn")
         .forEach((btn) => {
           btn.addEventListener("click", () => {
             playClickSound();
           });
         });
 
-      let readyInterval = null; // 統一管理倒數計時器
-      let isCountingDown = false; // 防止連點 READY 觸發多重倒數
-
-      // 依序播放 4 張倒數圖片（3 ➔ 2 ➔ 1 ➔ START）＋ 每一下都同步播放音效
+      // 3 ➔ 2 ➔ 1 ➔ START 零卡死倒數 ＋ 單一倒數音檔
       function startReadyCountdown() {
         if (isCountingDown) return;
         isCountingDown = true;
@@ -515,8 +514,9 @@
           readyInterval = null;
         }
 
-        function showCdStep(idx) {
-          cdStepImgs.forEach((img, i) => {
+        const stepImgs = countdownOverlay.querySelectorAll("img");
+        function showStep(idx) {
+          stepImgs.forEach((img, i) => {
             if (i === idx) {
               img.style.display = "block";
               triggerPopAnimation(img);
@@ -529,16 +529,20 @@
         countdownOverlay.style.display = "flex";
         let step = 0;
 
-        // 顯示第 1 張（數字 3）並播放第 1 聲
-        showCdStep(0);
-        playClickSound();
+        // 顯示 3 並從頭播放完整的單一倒數音檔
+        showStep(0);
+        if (sfxCountdown) {
+          sfxCountdown.muted = false;
+          sfxCountdown.currentTime = 0;
+          sfxCountdown.play().catch((err) => {
+            console.log("倒數音檔未能播放（請檢查 HTML 的 src 檔名）：", err);
+          });
+        }
 
         readyInterval = setInterval(() => {
           step++;
-          if (step < cdStepImgs.length) {
-            // 依序瞬切 2 ➔ 1 ➔ START 並播放音效
-            showCdStep(step);
-            playClickSound();
+          if (step < stepImgs.length) {
+            showStep(step);
           } else {
             clearInterval(readyInterval);
             readyInterval = null;
@@ -549,14 +553,6 @@
         }, 1000);
       }
 
-      // 圖片彈出動畫共用函式
-      function triggerPopAnimation(targetImg) {
-        targetImg.classList.remove("pop-anim");
-        void targetImg.offsetWidth;
-        targetImg.classList.add("pop-anim");
-      }
-
-      // 10 秒作答計時（3、2、1、START 結束後正式進入題目並從頭播放音樂）
       function startQuestionTimer() {
         if (quizBgm) {
           quizBgm.muted = false;
@@ -586,7 +582,6 @@
         }, 1000);
       }
 
-      // 7. 點擊選項判斷對錯與計分
       optionItems.forEach((item) => {
         item.addEventListener("click", () => {
           if (!isAnswering) return;
@@ -597,16 +592,12 @@
 
           const selectedIndex = parseInt(item.getAttribute("data-index"));
           const isCorrect = selectedIndex === quizData[currentIndex].answer;
-
-          if (isCorrect) {
-            score++;
-          }
+          if (isCorrect) score++;
 
           showAnswerFeedback(isCorrect);
         });
       });
 
-      // 8. 顯示答對／答錯 O/X ➔ 自動跳出「解答視窗圖」等待玩家按右上角 X 關閉
       function showAnswerFeedback(isCorrect) {
         if (quizBgm) {
           quizBgm.pause();
@@ -635,9 +626,7 @@
         if (isCorrect) {
           if (correctImg) {
             correctImg.style.display = "block";
-            if (typeof triggerPopAnimation === "function") {
-              triggerPopAnimation(correctImg);
-            }
+            triggerPopAnimation(correctImg);
           }
           if (overlay) overlay.classList.add("flash-yellow-fx");
           if (sfxCorrect) {
@@ -647,9 +636,7 @@
         } else {
           if (wrongImg) {
             wrongImg.style.display = "block";
-            if (typeof triggerPopAnimation === "function") {
-              triggerPopAnimation(wrongImg);
-            }
+            triggerPopAnimation(wrongImg);
           }
           if (overlay) overlay.classList.add("shake-red-fx");
           if (sfxWrong) {
@@ -658,7 +645,6 @@
           }
         }
 
-        // 1.2 秒後收起 O/X，等解答圖解碼完成後「圖片與 X 按鈕同時彈出」
         setTimeout(() => {
           if (overlay) {
             overlay.style.display = "none";
@@ -672,8 +658,6 @@
 
           if (explainModal && explainWindowImg && currentExplainSrc) {
             explainWindowImg.src = currentExplainSrc;
-
-            // 強制等圖片解碼完成，再顯示整個彈窗（絕不會先跑出 X 按鈕）
             if (explainWindowImg.decode) {
               explainWindowImg
                 .decode()
@@ -694,31 +678,24 @@
         }, 1200);
       }
 
-      // 點擊解答視窗右上角的「X 按鈕圖片」➔ 黑屏淡入淡出轉場進入下一題（防卡死安全版）
       function closeAnswerExplain() {
-        if (typeof playClickSound === "function") playClickSound();
+        playClickSound();
         const explainModal = document.getElementById("answer-explain-modal");
         const blackFade = document.getElementById("black-fade-transition");
 
-        // 如果是最後一題（第 5 題）答完，直接關閉解答並進入第二關過場
         if (currentIndex + 1 >= quizData.length) {
           if (explainModal) explainModal.style.display = "none";
           nextQuestion();
           return;
         }
 
-        // 1. 畫面淡入變全黑
         if (blackFade) blackFade.classList.add("is-black");
 
-        // 2. 等畫面變黑後切換題目，並確保黑屏一定會淡出
         setTimeout(() => {
           try {
             if (explainModal) explainModal.style.display = "none";
             nextQuestion();
-          } catch (err) {
-            console.error("切換下一題時發生錯誤：", err);
           } finally {
-            // 無論如何，0.15 秒後一定把黑屏移除，絕不卡死！
             setTimeout(() => {
               if (blackFade) blackFade.classList.remove("is-black");
             }, 150);
@@ -726,7 +703,6 @@
         }, 380);
       }
 
-      // 9. 切換下一題或進入第二關過場
       function nextQuestion() {
         currentIndex++;
         isAnswering = false;
@@ -739,30 +715,13 @@
         }
       }
 
-      // 角色對照表（指向戴金牌的結算專用圖，並相容各種儲存名稱）
-      const resultCharacterMap = {
-        "角色 1": "../img/角色/角色1金牌.png",
-        "角色 2": "../img/角色/角色2金牌.png",
-        "角色 3": "../img/角色/角色3金牌.png",
-        角色1: "../img/角色/角色1金牌.png",
-        角色2: "../img/角色/角色2金牌.png",
-        角色3: "../img/角色/角色3金牌.png",
-        1: "../img/角色/角色1金牌.png",
-        2: "../img/角色/角色2金牌.png",
-        3: "../img/角色/角色3金牌.png",
-      };
-
-      // 10. 第一關選擇題結束：儲存分數並跳轉到第二關（../04/04.html）
       function showFinalResult() {
         if (quizBgm) {
           quizBgm.pause();
           quizBgm.currentTime = 0;
         }
-
-        // 儲存第一關得分
         localStorage.setItem("stage1Score", score);
 
-        // 顯示過場提示畫面
         const calcModal = document.getElementById("calc-modal");
         if (calcModal) {
           const calcText = calcModal.querySelector(".calc-text");
@@ -773,110 +732,9 @@
           calcModal.style.display = "flex";
         }
 
-        // 1.8 秒後跳轉到第二關
         setTimeout(() => {
           window.location.href = "../04/04.html";
         }, 1800);
-      }
-
-      // 11. 分享脫逃結果功能
-      function shareResult() {
-        const savedName = localStorage.getItem("playerName") || "視傳系勇者";
-        const shareText = `【勇闖視傳系 ESCAPE FROM VCD】挑戰者「${savedName}」成功解開 ${score}/5 道空間謎題，順利逃出異世界啦！快來一起挑戰看看！`;
-        const shareUrl = window.location.origin;
-
-        if (navigator.share) {
-          navigator
-            .share({
-              title: "勇闖視傳系 ESCAPE FROM VCD",
-              text: shareText,
-              url: shareUrl,
-            })
-            .catch(() => {});
-        } else {
-          if (navigator.clipboard) {
-            navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
-            alert("逃脫結果已複製！");
-          } else {
-            alert(shareText);
-          }
-        }
-      }
-
-      // 按鈕 1：再玩一次（不回首頁，直接留在 03.html 從第 1 題重新挑戰）
-      function retryQuizOnly() {
-        window.location.reload();
-      }
-
-      // 按鈕 2：回到首頁（跳回 01.html）
-      function restartWholeGame() {
-        try {
-          if (webcamStream) {
-            webcamStream.getTracks().forEach((track) => track.stop());
-          }
-          const parentBgmBtn =
-            window.parent.document.getElementById("global-bgm-btn");
-          if (parentBgmBtn) parentBgmBtn.style.display = "flex";
-        } catch (e) {}
-
-        window.location.href = "../04/04.html";
-      }
-      let webcamStream = null;
-
-      // 1. 啟動前鏡頭相機（在 showFinalResult() 裡 score >= 3 時呼叫它！）
-      function startWebcam() {
-        const video = document.getElementById("player-webcam");
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          navigator.mediaDevices
-            .getUserMedia({ video: { facingMode: "user" }, audio: false })
-            .then((stream) => {
-              webcamStream = stream;
-              video.srcObject = stream;
-            })
-            .catch((err) => {
-              console.log("無法開啟相機（可能未授權或無鏡頭）：", err);
-              alert("請允許瀏覽器使用相機，才能拍下通關紀念照喔！");
-            });
-        }
-      }
-
-      // 2. 按下「拍下通關照」快門
-      function takeSnapshot() {
-        const video = document.getElementById("player-webcam");
-        const canvas = document.getElementById("photo-canvas");
-        const snapBtn = document.getElementById("snap-btn");
-        const retakeBtn = document.getElementById("retake-btn");
-
-        // 設定畫布尺寸與鏡頭一致，並把當前畫面畫上去定格
-        canvas.width = video.videoWidth || 400;
-        canvas.height = video.videoHeight || 400;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        // 隱藏動態鏡頭，顯示定格照片
-        video.style.display = "none";
-        canvas.style.display = "block";
-
-        // 切換按鈕為「重拍一張」
-        snapBtn.style.display = "none";
-        retakeBtn.style.display = "inline-block";
-
-        // 播放快門音效（共用你們的按鈕音效）
-        if (typeof playClickSound === "function") playClickSound();
-      }
-
-      // 3. 按下「重拍一張」恢復即時鏡頭
-      function retakePhoto() {
-        const video = document.getElementById("player-webcam");
-        const canvas = document.getElementById("photo-canvas");
-        const snapBtn = document.getElementById("snap-btn");
-        const retakeBtn = document.getElementById("retake-btn");
-
-        canvas.style.display = "none";
-        video.style.display = "block";
-
-        retakeBtn.style.display = "none";
-        snapBtn.style.display = "inline-block";
       }
 
       // 啟動預載與第一關

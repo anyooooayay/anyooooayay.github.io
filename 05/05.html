@@ -2,21 +2,30 @@
 <html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+
     <title>勇闖視傳系</title>
     <link rel="stylesheet" href="../css/style05.css" />
     <link rel="icon" type="image/png" href="../img/小裝飾/Iconeye1.png" />
+
     <!-- 加入進階字體 Google Fonts -->
-    <!-- 分開引入三種進階字體（短網址不截斷） -->
-    <style>
-      @import url("https://googleapis.com");
-      @import url("https://googleapis.com");
-      @import url("https://googleapis.com");
-      @import url("https://googleapis.com");
-    </style>
   </head>
   <body>
     <audio id="sfx-click" src="../sound/按鈕聲.wav" preload="auto"></audio>
+    <audio id="sfx-win" src="../sound/成功音效.mp3" preload="auto"></audio>
+    <audio id="sfx-lose" src="../sound/失敗音效.mp3" preload="auto"></audio>
+    <audio
+      id="stage3-bgm"
+      src="../sound/05背景音樂.mp3"
+      loop
+      preload="auto"
+    ></audio>
+
+    <audio id="sfx-correct" src="../sound/correct.mp3" preload="auto"></audio>
+    <audio id="sfx-wrong" src="../sound/wrong.wav" preload="auto"></audio>
 
     <!-- 第三關：關卡說明彈窗 -->
     <div id="font-intro-modal" class="intro-modal-overlay">
@@ -153,7 +162,7 @@
 
     <!-- 通關獎狀畫面 -->
     <div id="success-modal" class="modal-overlay" style="display: none">
-      <div class="cert-container">
+      <div id="certificate-capture-area" class="cert-container">
         <img
           src="../img/結算/獎狀底圖.png"
           class="cert-bg"
@@ -195,52 +204,108 @@
       </div>
     </div>
 
-    <!-- 挑戰失敗兩階段畫面 -->
+    <!-- 挑戰失敗兩階段畫面（已刪除重複的舊版 fail-intro-modal） -->
     <div
       id="fail-intro-modal"
       class="blue-fail-fullscreen"
       style="display: none"
     >
       <img
-        src="../img/結算/失敗畫面.png"
+        src="../img/結算/失敗背景圖.png"
         class="blue-bg-cover"
         alt="失敗畫面"
       />
     </div>
 
-    <div id="fail-modal" class="white-fail-overlay" style="display: none">
-      <div class="fail-dialog-window">
+    <div
+      id="fail-modal"
+      class="modal-overlay fail-bg-screen"
+      style="display: none"
+    >
+      <div id="residence-capture-area" class="cert-container">
         <img
-          src="../img/結算/失敗提示.png"
-          class="dialog-window-img"
-          alt="失敗提示"
+          src="../img/結算/失敗獎狀底圖.png"
+          class="cert-bg"
+          alt="異世界永久居留證"
         />
-        <div id="fail-score-num" class="fail-score-pos">0</div>
-        <div id="fail-total-num" class="fail-total-pos">14</div>
+        <div id="fail-score-display" class="cert-text score-pos">0/14</div>
+        <div id="fail-player-name" class="cert-text name-pos">視傳系留級生</div>
+        <img
+          id="fail-char-img"
+          src="../img/角色/角色1哭哭.png"
+          class="cert-char"
+          alt="滯留角色"
+        />
 
-        <div class="fail-btn-group">
-          <button class="fail-img-btn" onclick="restartFromStage1()">
-            <img src="../img/結算/再玩一次按鈕.png" alt="再玩一次" />
-          </button>
-          <button class="fail-img-btn" onclick="restartWholeGame()">
-            <img
-              src="../img/結算/回到首頁按鈕.png"
-              alt="回到首頁"
-              onerror="
-                this.style.display = 'none';
-                this.nextElementSibling.style.display = 'flex';
-              "
-            />
-            <span class="temp-home-placeholder" style="display: none"
-              >回到首頁</span
-            >
-          </button>
+        <div class="camera-box">
+          <video id="fail-webcam" autoplay playsinline></video>
+          <canvas id="fail-photo-canvas" style="display: none"></canvas>
         </div>
+        <img src="../img/結算/膠帶.png" class="fail-tape-deco" alt="膠帶裝飾" />
+
+        <button
+          id="fail-snap-btn"
+          class="img-btn snap-pos"
+          onclick="takeFailSnapshot()"
+        >
+          <img src="../img/結算/拍照按鈕.png" alt="拍照" />
+        </button>
+        <button
+          id="fail-retake-btn"
+          class="img-btn snap-pos"
+          onclick="retakeFailPhoto()"
+          style="display: none"
+        >
+          <img src="../img/結算/拍照按鈕.png" alt="重拍" />
+        </button>
+
+        <button class="img-btn share-pos" onclick="shareFailResult()">
+          <img src="../img/結算/分享按鈕.png" alt="分享居留證" />
+        </button>
+        <button class="img-btn restart-pos" onclick="restartFromStage1()">
+          <img src="../img/結算/再玩一次按鈕.png" alt="再玩一次" />
+        </button>
+      </div>
+    </div>
+
+    <!-- 掃描 QR Code 下載獎狀／居留證彈窗 -->
+    <div
+      id="qr-share-modal"
+      class="overlay"
+      style="display: none; z-index: 9999"
+    >
+      <div class="qr-pixel-box">
+        <div class="qr-badge">SCAN TO SAVE // 專屬紀念卡</div>
+        <h2 id="qr-modal-title" class="qr-title">掃描 QR Code 儲存至手機</h2>
+        <div id="qr-loading-box" class="qr-loading">
+          <div
+            class="calc-spinner"
+            style="width: 44px; height: 44px; margin: 16px auto"
+          ></div>
+          <p>正在生成專屬高畫質紀念圖...</p>
+        </div>
+        <div
+          id="qrcode-canvas-box"
+          class="qr-code-frame"
+          style="display: none"
+        ></div>
+        <p id="qr-modal-hint" class="qr-hint">
+          請打開手機相機掃描上方條碼，長按圖片即可儲存！
+        </p>
+        <button class="action-pixel-btn" onclick="closeQrModal()">
+          關閉視窗
+        </button>
       </div>
     </div>
 
     <script>
       const sfxClick = document.getElementById("sfx-click");
+      const stage3Bgm = document.getElementById("stage3-bgm");
+      const sfxCorrect = document.getElementById("sfx-correct");
+      const sfxWrong = document.getElementById("sfx-wrong");
+
+      if (stage3Bgm) stage3Bgm.volume = 0.3;
+
       const sourceList = document.getElementById("source-card-list");
       const cards = document.querySelectorAll(".font-sample-card");
       const dropSlots = document.querySelectorAll(".font-drop-slot");
@@ -248,15 +313,22 @@
       // 讀取前兩關分數
       const s1 = Number(localStorage.getItem("stage1Score")) || 0;
       const s2 = Number(localStorage.getItem("stage2Score")) || 0;
-      document.getElementById("prev-score-tag").textContent =
-        `前兩關累計：${s1 + s2} 分`;
+      const prevScoreTag = document.getElementById("prev-score-tag");
+      if (prevScoreTag) {
+        prevScoreTag.textContent = `前兩關累計：${s1 + s2} 分`;
+      }
 
+      // 點擊「開始挑戰 READY」
       function startFontStage() {
         if (sfxClick) {
           sfxClick.currentTime = 0;
           sfxClick.play().catch(() => {});
         }
-        document.getElementById("font-intro-modal").style.display = "none";
+        if (stage3Bgm) {
+          stage3Bgm.play().catch(() => {});
+        }
+        const introModal = document.getElementById("font-intro-modal");
+        if (introModal) introModal.style.display = "none";
       }
 
       // 兩題字體題庫：第 1 題中文 PNG 圖，第 2 題英文 PNG 圖
@@ -429,7 +501,7 @@
         selectedCardForTap = null;
       }
 
-      // 送出當前題目 -> 顯示答對/答錯與圖片解析彈窗
+      // 送出當前題目 -> 顯示答對/答錯音效與圖片解析彈窗
       function submitFontMatching() {
         let placedCount = 0;
         let roundScore = 0;
@@ -443,7 +515,7 @@
           if (placedCard) {
             placedCount++;
             const userFontId = placedCard.dataset.font;
-            const isCorrect = userFontId === targetFontId;
+            const isCorrect = userFontId === targetFontId; // 👈 已補上這行對錯判定！
 
             if (isCorrect) roundScore++;
 
@@ -458,13 +530,23 @@
         });
 
         if (placedCount < 3) {
-          alert("請先將左側三張字體卡片都放入右側對應名稱中喔！");
+          alert("請先將左邊 3 張字體圖片都放進右邊對應框內！");
           return;
         }
 
-        if (sfxClick) {
-          sfxClick.currentTime = 0;
-          sfxClick.play().catch(() => {});
+        // 全對（3 個全對）播放答對音效；只要錯 1 個以上就播放答錯音效
+        if (roundScore === 3) {
+          if (sfxCorrect) {
+            sfxCorrect.volume = 0.75;
+            sfxCorrect.currentTime = 0;
+            sfxCorrect.play().catch(() => {});
+          }
+        } else {
+          if (sfxWrong) {
+            sfxWrong.volume = 0.7;
+            sfxWrong.currentTime = 0;
+            sfxWrong.play().catch(() => {});
+          }
         }
 
         totalStage3Score += roundScore;
@@ -519,6 +601,11 @@
           return;
         }
 
+        if (stage3Bgm) {
+          stage3Bgm.pause();
+          stage3Bgm.currentTime = 0;
+        }
+
         const totalQuestions = 14;
         const totalScore = s1 + s2 + totalStage3Score;
         const passThreshold = 8;
@@ -544,8 +631,17 @@
           const savedName = localStorage.getItem("playerName") || "視傳系勇者";
           const savedChar =
             localStorage.getItem("selectedCharacter") || "角色 1";
+          const sfxWin = document.getElementById("sfx-win");
+          const sfxLose = document.getElementById("sfx-lose");
 
           if (totalScore >= passThreshold) {
+            // 1. 挑戰成功：播放通關凱旋音樂
+            if (sfxWin) {
+              sfxWin.volume = 0.8;
+              sfxWin.currentTime = 0;
+              sfxWin.play().catch(() => {});
+            }
+
             const nameEl = document.getElementById("cert-player-name");
             const scoreEl = document.getElementById("cert-score-display");
             const certCharImg = document.getElementById("cert-char-img");
@@ -558,25 +654,46 @@
               certCharImg.src = resultCharacterMap[savedChar];
             }
             if (successModal) successModal.style.display = "flex";
-            if (typeof startWebcam === "function") startWebcam();
+            startWebcam();
           } else {
-            const failScoreNum = document.getElementById("fail-score-num");
-            const failTotalNum = document.getElementById("fail-total-num");
+            // 2. 挑戰失敗：播放失敗居留證音樂
+            if (sfxLose) {
+              sfxLose.volume = 0.75;
+              sfxLose.currentTime = 0;
+              sfxLose.play().catch(() => {});
+            }
+
+            const failScoreEl = document.getElementById("fail-score-display");
+            const failNameEl = document.getElementById("fail-player-name");
+            const failCharImg = document.getElementById("fail-char-img");
             const failIntro = document.getElementById("fail-intro-modal");
             const failModal = document.getElementById("fail-modal");
 
-            if (failScoreNum) failScoreNum.textContent = totalScore;
-            if (failTotalNum) failTotalNum.textContent = totalQuestions;
+            if (failScoreEl)
+              failScoreEl.textContent = `${totalScore}/${totalQuestions}`;
+            if (failNameEl) failNameEl.textContent = savedName;
 
-            if (failIntro && failModal) {
-              failIntro.style.display = "block";
-              setTimeout(() => {
-                failIntro.style.display = "none";
-                failModal.style.display = "flex";
-              }, 1800);
+            /// 補回失敗角色圖對照表，解除 ReferenceError 卡死！
+            const failCharacterMap = {
+              "角色 1": "../img/角色/角色1哭哭.png",
+              "角色 2": "../img/角色/角色2哭哭.png",
+              "角色 3": "../img/角色/角色3哭哭.png",
+              角色1: "../img/角色/角色1哭哭.png",
+              角色2: "../img/角色/角色2哭哭.png",
+              角色3: "../img/角色/角色3哭哭.png",
+            };
+
+            if (failCharImg && failCharacterMap[savedChar]) {
+              failCharImg.src = failCharacterMap[savedChar];
+            }
+
+            if (failIntro) failIntro.style.display = "block";
+            if (failModal) {
+              failModal.style.display = "flex";
+              if (typeof startFailWebcam === "function") startFailWebcam();
             }
           }
-        }, 2200);
+        }, 1000);
       }
 
       let webcamStream = null;
@@ -614,34 +731,333 @@
         document.getElementById("snap-btn").style.display = "inline-block";
       }
 
-      function shareResult() {
-        const savedName = localStorage.getItem("playerName") || "視傳系勇者";
-        const text = `【勇闖視傳系 ESCAPE FROM VCD】挑戰者「${savedName}」成功通過三大關卡考驗，順利逃出異世界！`;
-        navigator.clipboard
-          ?.writeText(`${text}\n${window.location.origin}`)
-          .then(() => {
-            alert("已複製通關戰績與網址！");
-          });
+      // 再玩一次（重設第三關）
+      function retryQuizOnly() {
+        window.location.reload();
       }
 
+      // 回到第一關重新開始
       function restartFromStage1() {
-        localStorage.removeItem("stage1Score");
-        localStorage.removeItem("stage2Score");
         window.location.href = "../03/03.html";
       }
 
+      // 回到首頁（01.html）
       function restartWholeGame() {
-        try {
-          if (webcamStream) webcamStream.getTracks().forEach((t) => t.stop());
-          const btn = window.parent.document.getElementById("global-bgm-btn");
-          if (btn) btn.style.display = "flex";
-        } catch (e) {}
-        localStorage.removeItem("stage1Score");
-        localStorage.removeItem("stage2Score");
-        window.location.href = "../0102/01.html";
+        window.location.href = "../01/01.html";
       }
 
-      // 初始化載入第 1 題
+      // 居留證：開啟鏡頭（含錯誤原因提示）
+      function startFailWebcam() {
+        const video = document.getElementById("fail-webcam");
+        if (!video) return;
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          alert(
+            "目前的瀏覽器環境不支援相機（請使用 http://localhost 或 Live Server 開啟）！",
+          );
+          return;
+        }
+
+        navigator.mediaDevices
+          .getUserMedia({ video: { facingMode: "user" }, audio: false })
+          .then((stream) => {
+            webcamStream = stream;
+            video.srcObject = stream;
+            video.play().catch(() => {});
+          })
+          .catch((err) => {
+            console.error("無法開啟相機：", err);
+            alert(
+              "無法開啟相機！請確認：\n1. 瀏覽器網址列左側已允許「相機」權限\n2. 沒有其他程式（如 Zoom/Meet）正在佔用鏡頭",
+            );
+          });
+      }
+
+      // 居留證：拍下黑白大頭照（相容 Chrome / Safari 所有瀏覽器的像素灰階演算法）
+      function takeFailSnapshot() {
+        if (sfxClick) {
+          sfxClick.currentTime = 0;
+          sfxClick.play().catch(() => {});
+        }
+        const video = document.getElementById("fail-webcam");
+        const canvas = document.getElementById("fail-photo-canvas");
+        if (!video || !canvas) return;
+
+        // 防止鏡頭尚未就緒時寬高為 0
+        const w = video.videoWidth || 400;
+        const h = video.videoHeight || 400;
+        canvas.width = w;
+        canvas.height = h;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0, w, h);
+
+        // 直接把像素轉成高對比黑白灰階（100% 相容 Safari 與 Chrome，且匯出 QR Code 圖片時絕對是黑白的）
+        try {
+          const imgData = ctx.getImageData(0, 0, w, h);
+          const data = imgData.data;
+          for (let i = 0; i < data.length; i += 4) {
+            // 標準人眼亮度灰階公式 + 提升對比度
+            let gray =
+              0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+            gray = (gray - 128) * 1.15 + 128;
+            gray = Math.max(0, Math.min(255, gray));
+            data[i] = gray;
+            data[i + 1] = gray;
+            data[i + 2] = gray;
+          }
+          ctx.putImageData(imgData, 0, 0);
+        } catch (e) {
+          console.warn("像素濾鏡略過：", e);
+        }
+
+        video.style.display = "none";
+        canvas.style.display = "block";
+        document.getElementById("fail-snap-btn").style.display = "none";
+        document.getElementById("fail-retake-btn").style.display =
+          "inline-block";
+      }
+
+      // 居留證：重拍大頭照
+      function retakeFailPhoto() {
+        if (sfxClick) {
+          sfxClick.currentTime = 0;
+          sfxClick.play().catch(() => {});
+        }
+        document.getElementById("fail-photo-canvas").style.display = "none";
+        document.getElementById("fail-webcam").style.display = "block";
+        document.getElementById("fail-retake-btn").style.display = "none";
+        document.getElementById("fail-snap-btn").style.display = "inline-block";
+      }
+
+      const IMGBB_API_KEY = "806ad817e6a39f91c149d04bc46463b3";
+
+      async function generateAndShowQrCode(captureElementId, titleText) {
+        if (sfxClick) {
+          sfxClick.currentTime = 0;
+          sfxClick.play().catch(() => {});
+        }
+
+        const isFail = captureElementId === "residence-capture-area";
+        const modal = document.getElementById("qr-share-modal");
+        const loadingBox = document.getElementById("qr-loading-box");
+        const qrBox = document.getElementById("qrcode-canvas-box");
+        const titleEl = document.getElementById("qr-modal-title");
+        const hintEl = document.getElementById("qr-modal-hint");
+
+        if (titleEl) titleEl.textContent = titleText;
+        if (loadingBox) loadingBox.style.display = "block";
+        if (qrBox) {
+          qrBox.style.display = "none";
+          qrBox.innerHTML = "";
+        }
+        if (hintEl) hintEl.textContent = "正在生成專屬 QR Code，請稍候...";
+        if (modal) modal.style.display = "flex";
+
+        // 1. 使用瀏覽器原生 Canvas 合成證書（統一使用 containerRect 變數）
+        const outCanvas = document.createElement("canvas");
+        const bgImg = document.querySelector(`#${captureElementId} .cert-bg`);
+        const rawW = (bgImg && bgImg.naturalWidth) || 1200;
+        const rawH = (bgImg && bgImg.naturalHeight) || 850;
+        const w = 960;
+        const h = Math.round((rawH / rawW) * w);
+        outCanvas.width = w;
+        outCanvas.height = h;
+        const ctx = outCanvas.getContext("2d");
+
+        if (bgImg && bgImg.complete) {
+          ctx.drawImage(bgImg, 0, 0, w, h);
+        }
+
+        const containerRect = document
+          .getElementById(captureElementId)
+          .getBoundingClientRect();
+
+        // 畫上自拍照片或鏡頭畫面
+        const photoCanvas = document.getElementById(
+          isFail ? "fail-photo-canvas" : "photo-canvas",
+        );
+        const videoEl = document.getElementById(
+          isFail ? "fail-webcam" : "player-webcam",
+        );
+        const camBox = document.querySelector(
+          `#${captureElementId} .camera-box`,
+        );
+        if (camBox && containerRect.width > 0) {
+          const boxRect = camBox.getBoundingClientRect();
+          const rx =
+            ((boxRect.left - containerRect.left) / containerRect.width) * w;
+          const ry =
+            ((boxRect.top - containerRect.top) / containerRect.height) * h;
+          const rw = (boxRect.width / containerRect.width) * w;
+          const rh = (boxRect.height / containerRect.height) * h;
+
+          if (photoCanvas && photoCanvas.style.display !== "none") {
+            ctx.drawImage(photoCanvas, rx, ry, rw, rh);
+          } else if (videoEl && videoEl.readyState >= 2) {
+            ctx.drawImage(videoEl, rx, ry, rw, rh);
+          }
+        }
+
+        // 畫上角色圖與裝飾（皇冠或膠帶）
+        const charImg = document.getElementById(
+          isFail ? "fail-char-img" : "cert-char-img",
+        );
+        const decoImg = document.querySelector(
+          `#${captureElementId} ${isFail ? ".fail-tape-deco" : ".cert-crown"}`,
+        );
+        [charImg, decoImg].forEach((imgEl) => {
+          if (
+            imgEl &&
+            imgEl.complete &&
+            imgEl.naturalWidth > 0 &&
+            containerRect.width > 0
+          ) {
+            const r = imgEl.getBoundingClientRect();
+            const ix =
+              ((r.left - containerRect.left) / containerRect.width) * w;
+            const iy = ((r.top - containerRect.top) / containerRect.height) * h;
+            const iw = (r.width / containerRect.width) * w;
+            const ih = (r.height / containerRect.height) * h;
+            ctx.drawImage(imgEl, ix, iy, iw, ih);
+          }
+        });
+
+        // 畫上玩家名字與總分（自動判斷 CSS 是靠左或置中，100% 還原網頁畫面位置不跑位）
+        const nameEl = document.getElementById(
+          isFail ? "fail-player-name" : "cert-player-name",
+        );
+        const scoreEl = document.getElementById(
+          isFail ? "fail-score-display" : "cert-score-display",
+        );
+        [nameEl, scoreEl].forEach((txtEl) => {
+          if (txtEl && containerRect.width > 0) {
+            const r = txtEl.getBoundingClientRect();
+            const style = getComputedStyle(txtEl);
+
+            // 1. 判斷原本 CSS 的水平對齊方式（如果是 center 就取中心點，否則取最左邊起點 r.left）
+            const align = style.textAlign === "center" ? "center" : "left";
+            const drawX =
+              align === "center"
+                ? ((r.left + r.width / 2 - containerRect.left) /
+                    containerRect.width) *
+                  w
+                : ((r.left - containerRect.left) / containerRect.width) * w;
+
+            // 2. 垂直方向取文字框正中央，並微調 2% 補償像素字體基線
+            const drawY =
+              ((r.top + r.height / 2 - containerRect.top) /
+                containerRect.height) *
+              h;
+
+            // 3. 完整繼承原本 CSS 的字體大小、粗細與像素字型
+            const fontSize = Math.round(
+              (parseFloat(style.fontSize) / containerRect.width) * w,
+            );
+            ctx.font = `${style.fontWeight || "bold"} ${fontSize}px ${style.fontFamily || "sans-serif"}`;
+            ctx.fillStyle = style.color || "#3b1e10";
+            ctx.textAlign = align;
+            ctx.textBaseline = "middle";
+            ctx.fillText(txtEl.textContent.trim(), drawX, drawY);
+          }
+        });
+        // 壓縮成高畫質 JPEG 加速上傳（1 秒內秒傳）
+        const dataUrl = outCanvas.toDataURL("image/jpeg", 0.92);
+
+        try {
+          if (!navigator.onLine) throw new Error("離線模式");
+
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+          // 組合正確的 ImgBB 上傳網址（避免自動縮短）
+          const uploadUrl = [
+            "https://",
+            "api.imgbb.com",
+            "/1/upload?key=",
+            IMGBB_API_KEY,
+          ].join("");
+
+          const formData = new FormData();
+          formData.append("image", dataUrl.split(",")[1]);
+
+          const response = await fetch(uploadUrl, {
+            method: "POST",
+            body: formData,
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+          const result = await response.json();
+
+          if (result && result.success && result.data && result.data.url) {
+            // 組合正確的 QR Code 條碼產生器網址
+            const qrApiBase = [
+              "https://",
+              "api.qrserver.com",
+              "/v1/create-qr-code/?size=210x210&color=002376&data=",
+            ].join("");
+
+            const qrApiImg = document.createElement("img");
+            qrApiImg.src = qrApiBase + encodeURIComponent(result.data.url);
+            qrApiImg.alt = "掃描下載證書 QR Code";
+            qrApiImg.style.width = "210px";
+            qrApiImg.style.height = "210px";
+
+            if (loadingBox) loadingBox.style.display = "none";
+            if (qrBox) {
+              qrBox.style.display = "block";
+              qrBox.appendChild(qrApiImg);
+            }
+            if (hintEl) {
+              hintEl.textContent =
+                "請打開手機相機掃描上方條碼，長按圖片即可儲存！";
+            }
+          } else {
+            throw new Error("圖床回傳錯誤");
+          }
+        } catch (err) {
+          console.warn("改用本機直接下載：", err);
+          if (loadingBox) loadingBox.style.display = "none";
+          if (hintEl) {
+            hintEl.textContent =
+              "已為您將高畫質紀念證書直接下載儲存至電腦資料夾！";
+          }
+          const savedName =
+            localStorage.getItem("playerName") || "勇闖視傳系玩家";
+          const link = document.createElement("a");
+          link.download = `${isFail ? "異世界永久居留證" : "異世界逃脫證明書"}_${savedName}.jpg`;
+          link.href = dataUrl;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      }
+
+      // 3. 補回按鈕呼叫的三個核心函式（少了它們按按鈕會完全沒反應！）
+      function closeQrModal() {
+        if (sfxClick) {
+          sfxClick.currentTime = 0;
+          sfxClick.play().catch(() => {});
+        }
+        const modal = document.getElementById("qr-share-modal");
+        if (modal) modal.style.display = "none";
+      }
+
+      function shareResult() {
+        generateAndShowQrCode(
+          "certificate-capture-area",
+          "掃描領取・異世界逃脫證明書",
+        );
+      }
+
+      function shareFailResult() {
+        generateAndShowQrCode(
+          "residence-capture-area",
+          "掃描領取・異世界永久居留證",
+        );
+      }
+
+      // 啟動第三關第 1 題
       loadFontRound(0);
     </script>
   </body>
