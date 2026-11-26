@@ -177,6 +177,13 @@
           alt="通關角色"
         />
 
+        <!-- 👇 必須放在 certificate-capture-area 的「裡面」！ -->
+        <div class="camera-box">
+          <video id="player-webcam" autoplay playsinline muted></video>
+          <canvas id="photo-canvas" style="display: none"></canvas>
+          <div id="win-cam-countdown" class="cam-countdown-overlay"></div>
+        </div>
+
         <div class="camera-box">
           <video id="player-webcam" autoplay playsinline></video>
           <canvas id="photo-canvas" style="display: none"></canvas>
@@ -695,141 +702,200 @@
           }
         }, 1000);
       }
-
       let webcamStream = null;
+      let isCountingSnap = false; // 防止倒數期間重複連點按鈕
+
+      // 1. 通關獎狀：一進入頁面立刻開啟即時鏡頭預覽
       function startWebcam() {
         const video = document.getElementById("player-webcam");
+        const canvas = document.getElementById("photo-canvas");
+        if (!video) return;
+
+        video.style.display = "block";
+        if (canvas) canvas.style.display = "none";
+
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
           navigator.mediaDevices
             .getUserMedia({ video: { facingMode: "user" }, audio: false })
             .then((stream) => {
               webcamStream = stream;
               video.srcObject = stream;
+              video.play().catch(() => {});
             })
             .catch(() => {});
         }
       }
 
+      // 2. 失敗居留證：一進入頁面立刻開啟即時鏡頭預覽
+      function startFailWebcam() {
+        const video = document.getElementById("fail-webcam");
+        const canvas = document.getElementById("fail-photo-canvas");
+        if (!video) return;
+
+        video.style.display = "block";
+        if (canvas) canvas.style.display = "none";
+
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          navigator.mediaDevices
+            .getUserMedia({ video: { facingMode: "user" }, audio: false })
+            .then((stream) => {
+              webcamStream = stream;
+              video.srcObject = stream;
+              video.play().catch(() => {});
+            })
+            .catch(() => {});
+        }
+      }
+
+      // 共用「3 ➔ 2 ➔ 1 倒數自拍」（JS 直接在鏡頭框內生成最上層倒數，100% 必顯示！）
+      function runCountdownAndCapture(isFail) {
+        if (isCountingSnap) return;
+
+        const video = document.getElementById(
+          isFail ? "fail-webcam" : "player-webcam",
+        );
+        const canvas = document.getElementById(
+          isFail ? "fail-photo-canvas" : "photo-canvas",
+        );
+        const snapBtn = document.getElementById(
+          isFail ? "fail-snap-btn" : "snap-btn",
+        );
+        const retakeBtn = document.getElementById(
+          isFail ? "fail-retake-btn" : "retake-btn",
+        );
+
+        if (!video || !canvas) return;
+        const camBox = video.parentElement; // 直接抓包住鏡頭的 .camera-box
+
+        // 動態建立並強制置頂的倒數遮罩（不依賴任何外部 HTML 或 CSS）
+        let countEl = camBox.querySelector(".js-live-countdown");
+        if (!countEl) {
+          countEl = document.createElement("div");
+          countEl.className = "js-live-countdown";
+          Object.assign(countEl.style, {
+            position: "absolute",
+            inset: "0",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "rgba(0, 0, 0, 0.45)",
+            color: "#ffd23f",
+            fontSize: "54px",
+            fontWeight: "bold",
+            textShadow: "0 4px 0 #002376, 0 0 15px #000",
+            zIndex: "99999",
+            pointerEvents: "none",
+          });
+          camBox.appendChild(countEl);
+        }
+
+        isCountingSnap = true;
+        let sec = 3;
+
+        function showNumber(num) {
+          if (sfxClick) {
+            sfxClick.currentTime = 0;
+            sfxClick.play().catch(() => {});
+          }
+          countEl.style.display = "flex";
+          countEl.textContent = num;
+        }
+
+        showNumber(sec);
+
+        const timer = setInterval(() => {
+          sec--;
+          if (sec > 0) {
+            showNumber(sec);
+          } else {
+            clearInterval(timer);
+            countEl.style.display = "none";
+
+            // 倒數結束：執行快門定格拍照（含水平鏡像矯正）
+            const w = video.videoWidth || 400;
+            const h = video.videoHeight || 400;
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext("2d");
+
+            ctx.save();
+            ctx.translate(w, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0, w, h);
+            ctx.restore();
+
+            if (isFail) {
+              try {
+                const imgData = ctx.getImageData(0, 0, w, h);
+                const data = imgData.data;
+                for (let i = 0; i < data.length; i += 4) {
+                  let gray =
+                    0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                  gray = Math.max(0, Math.min(255, (gray - 128) * 1.15 + 128));
+                  data[i] = data[i + 1] = data[i + 2] = gray;
+                }
+                ctx.putImageData(imgData, 0, 0);
+              } catch (e) {}
+            }
+
+            video.style.display = "none";
+            canvas.style.display = "block";
+            if (snapBtn) snapBtn.style.display = "none";
+            if (retakeBtn) retakeBtn.style.display = "inline-block";
+            isCountingSnap = false;
+          }
+        }, 1000);
+      }
+
+      // 綁定通關獎狀與失敗居留證的拍照／重拍按鈕
       function takeSnapshot() {
-        const video = document.getElementById("player-webcam");
-        const canvas = document.getElementById("photo-canvas");
-        canvas.width = video.videoWidth || 400;
-        canvas.height = video.videoHeight || 400;
-        canvas
-          .getContext("2d")
-          .drawImage(video, 0, 0, canvas.width, canvas.height);
-        video.style.display = "none";
-        canvas.style.display = "block";
-        document.getElementById("snap-btn").style.display = "none";
-        document.getElementById("retake-btn").style.display = "inline-block";
+        runCountdownAndCapture(false);
       }
 
       function retakePhoto() {
-        document.getElementById("photo-canvas").style.display = "none";
-        document.getElementById("player-webcam").style.display = "block";
-        document.getElementById("retake-btn").style.display = "none";
-        document.getElementById("snap-btn").style.display = "inline-block";
-      }
-
-      // 再玩一次（重設第三關）
-      function retryQuizOnly() {
-        window.location.reload();
-      }
-
-      // 回到第一關重新開始
-      function restartFromStage1() {
-        window.location.href = "../03/03.html";
-      }
-
-      // 回到首頁（01.html）
-      function restartWholeGame() {
-        window.location.href = "../01/01.html";
-      }
-
-      // 居留證：開啟鏡頭（含錯誤原因提示）
-      function startFailWebcam() {
-        const video = document.getElementById("fail-webcam");
-        if (!video) return;
-
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          alert(
-            "目前的瀏覽器環境不支援相機（請使用 http://localhost 或 Live Server 開啟）！",
-          );
-          return;
-        }
-
-        navigator.mediaDevices
-          .getUserMedia({ video: { facingMode: "user" }, audio: false })
-          .then((stream) => {
-            webcamStream = stream;
-            video.srcObject = stream;
-            video.play().catch(() => {});
-          })
-          .catch((err) => {
-            console.error("無法開啟相機：", err);
-            alert(
-              "無法開啟相機！請確認：\n1. 瀏覽器網址列左側已允許「相機」權限\n2. 沒有其他程式（如 Zoom/Meet）正在佔用鏡頭",
-            );
-          });
-      }
-
-      // 居留證：拍下黑白大頭照（相容 Chrome / Safari 所有瀏覽器的像素灰階演算法）
-      function takeFailSnapshot() {
+        if (isCountingSnap) return;
         if (sfxClick) {
           sfxClick.currentTime = 0;
           sfxClick.play().catch(() => {});
         }
-        const video = document.getElementById("fail-webcam");
-        const canvas = document.getElementById("fail-photo-canvas");
-        if (!video || !canvas) return;
-
-        // 防止鏡頭尚未就緒時寬高為 0
-        const w = video.videoWidth || 400;
-        const h = video.videoHeight || 400;
-        canvas.width = w;
-        canvas.height = h;
-
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(video, 0, 0, w, h);
-
-        // 直接把像素轉成高對比黑白灰階（100% 相容 Safari 與 Chrome，且匯出 QR Code 圖片時絕對是黑白的）
-        try {
-          const imgData = ctx.getImageData(0, 0, w, h);
-          const data = imgData.data;
-          for (let i = 0; i < data.length; i += 4) {
-            // 標準人眼亮度灰階公式 + 提升對比度
-            let gray =
-              0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-            gray = (gray - 128) * 1.15 + 128;
-            gray = Math.max(0, Math.min(255, gray));
-            data[i] = gray;
-            data[i + 1] = gray;
-            data[i + 2] = gray;
-          }
-          ctx.putImageData(imgData, 0, 0);
-        } catch (e) {
-          console.warn("像素濾鏡略過：", e);
-        }
-
-        video.style.display = "none";
-        canvas.style.display = "block";
-        document.getElementById("fail-snap-btn").style.display = "none";
-        document.getElementById("fail-retake-btn").style.display =
-          "inline-block";
+        document.getElementById("photo-canvas").style.display = "none";
+        const video = document.getElementById("player-webcam");
+        video.style.display = "block";
+        video.play().catch(() => {});
+        document.getElementById("retake-btn").style.display = "none";
+        document.getElementById("snap-btn").style.display = "inline-block";
       }
 
-      // 居留證：重拍大頭照
+      function takeFailSnapshot() {
+        runCountdownAndCapture(true);
+      }
+
       function retakeFailPhoto() {
+        if (isCountingSnap) return;
         if (sfxClick) {
           sfxClick.currentTime = 0;
           sfxClick.play().catch(() => {});
         }
         document.getElementById("fail-photo-canvas").style.display = "none";
-        document.getElementById("fail-webcam").style.display = "block";
+        const video = document.getElementById("fail-webcam");
+        video.style.display = "block";
+        video.play().catch(() => {});
         document.getElementById("fail-retake-btn").style.display = "none";
         document.getElementById("fail-snap-btn").style.display = "inline-block";
       }
 
+      // 完整保留的三個重新挑戰按鈕函式
+      function retryQuizOnly() {
+        window.location.reload();
+      }
+
+      function restartFromStage1() {
+        window.location.href = "../03/03.html";
+      }
+
+      function restartWholeGame() {
+        window.location.href = "../01/01.html";
+      }
       const IMGBB_API_KEY = "806ad817e6a39f91c149d04bc46463b3";
 
       async function generateAndShowQrCode(captureElementId, titleText) {
@@ -873,31 +939,131 @@
           .getElementById(captureElementId)
           .getBoundingClientRect();
 
-        // 畫上自拍照片或鏡頭畫面
+        // 畫上自拍照片或鏡頭畫面（改用 offset 原始座標 + cover 置中裁切，手機與電腦 100% 不跑位）
+        const containerEl = document.getElementById(captureElementId);
+        const cw = containerEl ? containerEl.offsetWidth : 0;
+        const ch = containerEl ? containerEl.offsetHeight : 0;
+
         const photoCanvas = document.getElementById(
           isFail ? "fail-photo-canvas" : "photo-canvas",
         );
         const videoEl = document.getElementById(
           isFail ? "fail-webcam" : "player-webcam",
         );
-        const camBox = document.querySelector(
-          `#${captureElementId} .camera-box`,
-        );
-        if (camBox && containerRect.width > 0) {
-          const boxRect = camBox.getBoundingClientRect();
-          const rx =
-            ((boxRect.left - containerRect.left) / containerRect.width) * w;
-          const ry =
-            ((boxRect.top - containerRect.top) / containerRect.height) * h;
-          const rw = (boxRect.width / containerRect.width) * w;
-          const rh = (boxRect.height / containerRect.height) * h;
+        const camBox = containerEl
+          ? containerEl.querySelector(".camera-box")
+          : null;
 
-          if (photoCanvas && photoCanvas.style.display !== "none") {
-            ctx.drawImage(photoCanvas, rx, ry, rw, rh);
-          } else if (videoEl && videoEl.readyState >= 2) {
-            ctx.drawImage(videoEl, rx, ry, rw, rh);
+        if (camBox && cw > 0 && ch > 0) {
+          let boxX = camBox.offsetLeft;
+          let boxY = camBox.offsetTop;
+          const boxW = camBox.offsetWidth;
+          const boxH = camBox.offsetHeight;
+
+          const tr = getComputedStyle(camBox).transform;
+          if (tr && tr !== "none") {
+            const matrix = new DOMMatrix(tr);
+            boxX += matrix.m41;
+            boxY += matrix.m42;
+          }
+
+          // 👇 匯出圖片專用：自拍照片（鏡頭框）位置與大小微調（百分比）
+          const camOffsetX = 0.015; // 負數＝往左移，正數＝往右移（例如 -0.01 代表往左 1%）
+          const camOffsetY = 0.0; // 負數＝往上移，正數＝往下移（例如 -0.01 代表往上 1%）
+          const camScaleW = 1.0; // 寬度縮放比例（1.0＝原尺寸，0.95＝縮小 5%，1.05＝放大 5%）
+          const camScaleH = 1.0; // 高度縮放比例（1.0＝原尺寸，0.95＝縮小 5%，1.05＝放大 5%）
+
+          const destX = (boxX / cw + camOffsetX) * w;
+          const destY = (boxY / ch + camOffsetY) * h;
+          const destW = (boxW / cw) * camScaleW * w;
+          const destH = (boxH / ch) * camScaleH * h;
+
+          const srcEl =
+            photoCanvas && photoCanvas.style.display !== "none"
+              ? photoCanvas
+              : videoEl && videoEl.readyState >= 2
+                ? videoEl
+                : null;
+
+          if (srcEl) {
+            const srcW = srcEl.videoWidth || srcEl.width || 400;
+            const srcH = srcEl.videoHeight || srcEl.height || 400;
+
+            const srcRatio = srcW / srcH;
+            const destRatio = destW / destH;
+            let sx = 0,
+              sy = 0,
+              sWidth = srcW,
+              sHeight = srcH;
+
+            if (srcRatio > destRatio) {
+              sWidth = srcH * destRatio;
+              sx = (srcW - sWidth) / 2;
+            } else {
+              sHeight = srcW / destRatio;
+              sy = (srcH - sHeight) / 2;
+            }
+
+            ctx.drawImage(
+              srcEl,
+              sx,
+              sy,
+              sWidth,
+              sHeight,
+              destX,
+              destY,
+              destW,
+              destH,
+            );
           }
         }
+
+        // 畫上角色圖與皇冠／膠帶（共用上方的 containerEl、cw、ch）
+        const charImg = document.getElementById(
+          isFail ? "fail-char-img" : "cert-char-img",
+        );
+        const decoImg = containerEl.querySelector(
+          isFail ? ".fail-tape-deco" : ".cert-crown",
+        );
+
+        [charImg, decoImg].forEach((imgEl) => {
+          if (imgEl && imgEl.complete && imgEl.naturalWidth > 0 && cw > 0) {
+            let boxX = imgEl.offsetLeft;
+            let boxY = imgEl.offsetTop;
+            const boxW = imgEl.offsetWidth;
+            const boxH = imgEl.offsetHeight;
+
+            const tr = getComputedStyle(imgEl).transform;
+            if (tr && tr !== "none") {
+              const matrix = new DOMMatrix(tr);
+              boxX += matrix.m41;
+              boxY += matrix.m42;
+            }
+
+            const imgRatio = imgEl.naturalWidth / imgEl.naturalHeight;
+            const boxRatio = boxW / boxH;
+            let drawW = boxW;
+            let drawH = boxH;
+            let offsetX = 0;
+            let offsetY = 0;
+
+            if (imgRatio > boxRatio) {
+              drawH = boxW / imgRatio;
+              offsetY = (boxH - drawH) / 2;
+            } else {
+              drawW = boxH * imgRatio;
+              offsetX = (boxW - drawW) / 2;
+            }
+
+            ctx.drawImage(
+              imgEl,
+              ((boxX + offsetX) / cw) * w,
+              ((boxY + offsetY) / ch) * h,
+              (drawW / cw) * w,
+              (drawH / ch) * h,
+            );
+          }
+        });
 
         // 畫上玩家名字與總分（含匯出圖片專用微調座標，可自由調整到一像素不差）
         const nameEl = document.getElementById(
@@ -910,19 +1076,20 @@
         const textItems = [
           {
             el: scoreEl,
-            // 👇 分數（3/14）微調：往左移一點點（-0.015），避開右邊的「題」字！
-            offsetX: -0.01, // 負數＝往左移，正數＝往右移
-            offsetY: -0.002, // 負數＝往上移，正數＝往下移
+            offsetX: -0.015, // 左右位置微調（負數往左、正數往右）
+            offsetY: -0.001, // 上下位置微調（負數往上、正數往下）
+            letterSpacing: "2px", // 分數保持預設字距
           },
           {
             el: nameEl,
-            // 👇 名字（Guang-Dah Chen）微調：往上提一點點，與左邊文字完全水平對齊！
-            offsetX: -0.02, // 負數＝往左移，正數＝往右移
-            offsetY: -0.002, // 負數＝往上移，正數＝往下移
+            offsetX: -0.015,
+            offsetY: -0.0002,
+            // 👇 調整這裡的數字就能改變名字字距（例如 "5px"、"12px"，負數如 "-2px" 則變緊）
+            letterSpacing: "3px",
           },
         ];
 
-        textItems.forEach(({ el: txtEl, offsetX, offsetY }) => {
+        textItems.forEach(({ el: txtEl, offsetX, offsetY, letterSpacing }) => {
           if (txtEl && containerRect.width > 0) {
             const r = txtEl.getBoundingClientRect();
             const style = getComputedStyle(txtEl);
@@ -947,7 +1114,11 @@
             ctx.fillStyle = style.color || "#3b1e10";
             ctx.textAlign = align;
             ctx.textBaseline = "middle";
+
+            // 套用字距設定，畫完後自動歸零以免影響其他文字
+            ctx.letterSpacing = letterSpacing || "0px";
             ctx.fillText(txtEl.textContent.trim(), drawX, drawY);
+            ctx.letterSpacing = "0px";
           }
         });
         // 壓縮成高畫質 JPEG 加速上傳（1 秒內秒傳）

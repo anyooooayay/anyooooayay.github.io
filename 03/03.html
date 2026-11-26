@@ -645,34 +645,33 @@
           }
         }
 
+        // 1. 在播放「答對／答錯特效」的同時，背景就先偷偷載入並解碼這一題的解析圖片！
+        const explainModal = document.getElementById("answer-explain-modal");
+        const explainWindowImg = document.getElementById("explain-window-img");
+        const currentExplainSrc = quizData[currentIndex].explainImg;
+
+        if (explainWindowImg && currentExplainSrc) {
+          explainWindowImg.src = currentExplainSrc;
+        }
+
         setTimeout(() => {
-          if (overlay) {
-            overlay.style.display = "none";
-            overlay.classList.remove("shake-red-fx", "flash-yellow-fx");
-          }
-
-          const explainModal = document.getElementById("answer-explain-modal");
-          const explainWindowImg =
-            document.getElementById("explain-window-img");
-          const currentExplainSrc = quizData[currentIndex].explainImg;
-
+          // 2. 先讓解析彈窗直接蓋上畫面（確保解析彈窗 z-index 高於 feedback-overlay）
           if (explainModal && explainWindowImg && currentExplainSrc) {
-            explainWindowImg.src = currentExplainSrc;
-            if (explainWindowImg.decode) {
-              explainWindowImg
-                .decode()
-                .then(() => {
-                  explainModal.style.display = "flex";
-                })
-                .catch(() => {
-                  explainModal.style.display = "flex";
-                });
-            } else {
-              explainWindowImg.onload = () => {
-                explainModal.style.display = "flex";
-              };
-            }
+            explainModal.style.zIndex = "999";
+            explainModal.style.display = "flex";
+
+            // 3. 解析彈窗已經完整遮住題目後，才把「答對／答錯特效遮罩」關掉，完全不會露出底下的題目圖！
+            requestAnimationFrame(() => {
+              if (overlay) {
+                overlay.style.display = "none";
+                overlay.classList.remove("shake-red-fx", "flash-yellow-fx");
+              }
+            });
           } else {
+            if (overlay) {
+              overlay.style.display = "none";
+              overlay.classList.remove("shake-red-fx", "flash-yellow-fx");
+            }
             nextQuestion();
           }
         }, 1200);
