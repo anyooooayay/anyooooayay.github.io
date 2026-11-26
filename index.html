@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="icon" type="image/png" href="img/小裝飾/Iconeye1.png" />
 
-    <!-- 👇 加在這裡：讓 iPhone / iPad「加入主畫面」後 100% 滿版無網址列開啟 -->
+    <!-- iOS 加入主畫面滿版設定（展場專用機加入主畫面後即為 100% 無網址列全螢幕） -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta
       name="apple-mobile-web-app-status-bar-style"
@@ -145,7 +145,13 @@
             0 20px 60px rgba(0, 0, 0, 0.85);
         }
       }
-
+      #stage-wrapper {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
       /* 右上角常駐的像素音樂開關按鈕 */
       #global-bgm-btn {
         position: fixed;
@@ -159,6 +165,50 @@
         display: flex;
         justify-content: center;
         align-items: center;
+      }
+
+      /* 全螢幕按鈕：筆電預設隱藏，只在手機／平板顯示並排在喇叭左邊 */
+      #fullscreen-btn {
+        display: none;
+        position: fixed;
+        top: 16px;
+        right: 70px;
+        z-index: 9999;
+        width: 46px;
+        height: 46px;
+        font-size: 20px;
+        background: rgba(0, 35, 118, 0.88);
+        color: #ffd23f;
+        border: 2px solid #ffd23f;
+        border-radius: 8px;
+        justify-content: center;
+        align-items: center;
+      }
+
+      @media screen and (max-width: 1024px) {
+        #fullscreen-btn {
+          display: flex !important;
+        }
+      }
+
+      /* iPhone 點擊全螢幕按鈕時的提示氣泡（預設隱藏） */
+      #ios-fs-tip {
+        display: none;
+        position: fixed;
+        top: 70px;
+        right: 16px;
+        z-index: 99995;
+        background: #fffdf5;
+        color: #3b1e10;
+        border: 3px solid #002376;
+        box-shadow:
+          0 0 0 3px #ffd23f,
+          0 10px 25px rgba(0, 0, 0, 0.8);
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-size: 13px;
+        line-height: 1.6;
+        max-width: 270px;
       }
 
       /* 覆蓋在最上層的復古像素螢幕濾鏡（不影響任何按鈕點擊） */
@@ -213,8 +263,15 @@
         allow="camera *; microphone *; autoplay"
       ></iframe>
     </div>
+
     <!-- 4. 復古 CRT 螢幕掃描線＋暗角濾鏡 -->
     <div class="crt-overlay"></div>
+    <button id="fullscreen-btn" title="切換全螢幕">⛶</button>
+    <div id="ios-fs-tip" onclick="this.style.display = 'none'">
+      <strong>📱 iPhone 放大畫面方法：</strong><br />
+      點網址列左側 <b>「≡」</b> ➔ 選擇
+      <b>「隱藏工具列」</b> 即可放大！（點此關閉）
+    </div>
 
     <!-- 手機／平板直立時自動顯示的「請轉為橫式」復古提示遮罩 -->
     <div id="rotate-device-overlay">
@@ -229,6 +286,24 @@
     </div>
 
     <script>
+      const fsBtn = document.getElementById("fullscreen-btn");
+      const iosTip = document.getElementById("ios-fs-tip");
+      if (fsBtn) {
+        fsBtn.addEventListener("click", () => {
+          const docEl = document.documentElement;
+          if (docEl.requestFullscreen) {
+            docEl.requestFullscreen().catch(() => {
+              if (iosTip) iosTip.style.display = "block";
+            });
+          } else if (docEl.webkitRequestFullscreen) {
+            docEl.webkitRequestFullscreen();
+          } else if (iosTip) {
+            iosTip.style.display =
+              iosTip.style.display === "block" ? "none" : "block";
+          }
+        });
+      }
+
       const bgm = document.getElementById("global-bgm");
       const bgmBtn = document.getElementById("global-bgm-btn");
       const gameFrame = document.getElementById("game-frame");
