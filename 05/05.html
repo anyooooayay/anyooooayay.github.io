@@ -160,6 +160,18 @@
       </div>
     </div>
 
+    <!-- 通關專屬角色動畫影片遮罩 -->
+    <div id="win-video-modal" class="win-video-overlay" style="display: none">
+      <video id="win-story-video" playsinline preload="auto"></video>
+      <button
+        id="skip-win-video-btn"
+        class="skip-video-btn"
+        onclick="finishWinVideo()"
+      >
+        略過動畫 ▶▶
+      </button>
+    </div>
+
     <!-- 通關獎狀畫面 -->
     <div id="success-modal" class="modal-overlay" style="display: none">
       <div id="certificate-capture-area" class="cert-container">
@@ -638,26 +650,42 @@
           const sfxLose = document.getElementById("sfx-lose");
 
           if (totalScore >= passThreshold) {
-            // 1. 挑戰成功：播放通關凱旋音樂
-            if (sfxWin) {
-              sfxWin.volume = 0.8;
-              sfxWin.currentTime = 0;
-              sfxWin.play().catch(() => {});
-            }
+            // 1. 請將這裡的路徑改成 VS Code 左側資料夾裡「一模一樣的資料夾與檔名」
+            const winVideoMap = {
+              "角色 1": "../video/角色1通關.mp4",
+              "角色 2": "../video/角色2通關.mp4",
+              "角色 3": "../video/角色3通關.mp4",
+              角色1: "../video/角色1通關.mp4",
+              角色2: "../video/角色2通關.mp4",
+              角色3: "../video/角色3通關.mp4",
+            };
 
-            const nameEl = document.getElementById("cert-player-name");
-            const scoreEl = document.getElementById("cert-score-display");
-            const certCharImg = document.getElementById("cert-char-img");
-            const successModal = document.getElementById("success-modal");
+            const videoModal = document.getElementById("win-video-modal");
+            const storyVideo = document.getElementById("win-story-video");
+            const videoSrc = winVideoMap[savedChar] || "../video/角色1通關.mp4";
 
-            if (nameEl) nameEl.textContent = savedName;
-            if (scoreEl)
-              scoreEl.textContent = `${totalScore}/${totalQuestions}`;
-            if (certCharImg && resultCharacterMap[savedChar]) {
-              certCharImg.src = resultCharacterMap[savedChar];
+            if (videoModal && storyVideo) {
+              storyVideo.src = videoSrc;
+              storyVideo.onerror = () => {
+                alert("找不到影片檔案，請檢查路徑是否正確：\n" + videoSrc);
+                finishWinVideo();
+              };
+              videoModal.style.display = "flex";
+
+              storyVideo.onended = () => {
+                finishWinVideo();
+              };
+
+              storyVideo.play().catch(() => {
+                storyVideo.muted = true;
+                storyVideo.play().catch(() => {
+                  finishWinVideo();
+                });
+              });
+            } else {
+              alert("找不到 win-video-modal，請確認 HTML 有貼上影片區塊！");
+              finishWinVideo();
             }
-            if (successModal) successModal.style.display = "flex";
-            startWebcam();
           } else {
             // 2. 挑戰失敗：播放失敗居留證音樂
             if (sfxLose) {
@@ -700,6 +728,56 @@
       }
       let webcamStream = null;
       let isCountingSnap = false; // 防止倒數期間重複連點按鈕
+
+      // 通關影片播完（或點擊略過）後：關閉影片、播放通關音效並開啟獎狀與鏡頭
+      function finishWinVideo() {
+        const videoModal = document.getElementById("win-video-modal");
+        const storyVideo = document.getElementById("win-story-video");
+
+        if (storyVideo) {
+          storyVideo.pause();
+          storyVideo.onended = null;
+        }
+        if (videoModal) {
+          videoModal.style.display = "none";
+        }
+
+        const savedName = localStorage.getItem("playerName") || "視傳系勇者";
+        const savedChar = localStorage.getItem("selectedCharacter") || "角色 1";
+        const sfxWin = document.getElementById("sfx-win");
+
+        // 重新計算總分與角色對照表（解決跨函式找不到 totalScore / resultCharacterMap 導致黑屏的 Bug！）
+        const finalTotalQuestions = 14;
+        const finalTotalScore = s1 + s2 + totalStage3Score;
+        const winCharacterMap = {
+          "角色 1": "../img/角色/角色1金牌.png",
+          "角色 2": "../img/角色/角色2金牌.png",
+          "角色 3": "../img/角色/角色3金牌.png",
+          角色1: "../img/角色/角色1金牌.png",
+          角色2: "../img/角色/角色2金牌.png",
+          角色3: "../img/角色/角色3金牌.png",
+        };
+
+        if (sfxWin) {
+          sfxWin.volume = 0.8;
+          sfxWin.currentTime = 0;
+          sfxWin.play().catch(() => {});
+        }
+
+        const nameEl = document.getElementById("cert-player-name");
+        const scoreEl = document.getElementById("cert-score-display");
+        const certCharImg = document.getElementById("cert-char-img");
+        const successModal = document.getElementById("success-modal");
+
+        if (nameEl) nameEl.textContent = savedName;
+        if (scoreEl)
+          scoreEl.textContent = `${finalTotalScore}/${finalTotalQuestions}`;
+        if (certCharImg && winCharacterMap[savedChar]) {
+          certCharImg.src = winCharacterMap[savedChar];
+        }
+        if (successModal) successModal.style.display = "flex";
+        startWebcam();
+      }
 
       // 通關獎狀：開啟鏡頭即時預覽（修正無畫面問題）
       function startWebcam() {
